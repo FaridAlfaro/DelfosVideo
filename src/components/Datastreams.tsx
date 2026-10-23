@@ -1,7 +1,7 @@
-// src/components/DataStreams.tsx — pills de datos (feeds sociales / carritos) desfilando en filas inclinadas
+// src/components/Datastreams.tsx — Minimalist matte glass pills streaming in inclined rows (Zero Neon)
 import React from "react";
 import { AbsoluteFill, useCurrentFrame } from "remotion";
-import { FONT, gradBorder } from "./Theme";
+import { FONT } from "./Theme";
 import { Icon, IconName } from "./Ui";
 
 const ITEMS: { icon: IconName; text: string }[] = [
@@ -33,7 +33,7 @@ export const DataStreams: React.FC<{ dim?: number }> = ({ dim = 0.6 }) => {
                     flexDirection: "column",
                     justifyContent: "center",
                     gap: 34,
-                    transform: `rotateX(16deg) rotateZ(-7deg) scale(${1.25 + frame * 0.0012})`,
+                    transform: `rotateX(16deg) rotateZ(-7deg) scale(${1.22 + frame * 0.001})`,
                 }}
             >
                 {Array.from({ length: rows }).map((_, r) => {
@@ -43,7 +43,7 @@ export const DataStreams: React.FC<{ dim?: number }> = ({ dim = 0.6 }) => {
                     const x = dir === 1 ? -off : -LOOP + off;
                     return (
                         <div key={r} style={{ display: "flex", gap: GAP, transform: `translateX(${x}px)`, width: LOOP * 2 }}>
-                            {[...ITEMS, ...ITEMS].map((it, i) => {
+                            {[...ITEMS, ...ITEMS].map((_it, i) => {
                                 const item = ITEMS[(i + r * 3) % ITEMS.length];
                                 return (
                                     <div
@@ -53,18 +53,33 @@ export const DataStreams: React.FC<{ dim?: number }> = ({ dim = 0.6 }) => {
                                             flex: "none",
                                             boxSizing: "border-box",
                                             height: 76,
-                                            borderRadius: 38,
+                                            borderRadius: 999,
                                             padding: "0 22px",
                                             display: "flex",
                                             alignItems: "center",
                                             gap: 14,
-                                            ...gradBorder(frame + i * 17, "#10131f", "#6366f1", "#ec4899", 1.5, 2),
+                                            backgroundColor: "rgba(12, 16, 26, 0.78)",
+                                            backdropFilter: "blur(24px)",
+                                            border: "1px solid rgba(255, 255, 255, 0.09)",
                                         }}
                                     >
-                                        <Icon name={item.icon} size={26} color="#c7d2fe" />
-                                        <span style={{ fontFamily: FONT, fontSize: 22, color: "#f1f5f9", whiteSpace: "nowrap", flex: 1 }}>{item.text}</span>
-                                        <div style={{ width: 34, height: 34, borderRadius: 17, background: "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                            <Icon name="trend" size={16} sw={2.4} />
+                                        <Icon name={item.icon} size={24} color="#CBD5E1" />
+                                        <span style={{ fontFamily: FONT, fontSize: 21, color: "#F8FAFC", whiteSpace: "nowrap", flex: 1 }}>
+                                            {item.text}
+                                        </span>
+                                        <div
+                                            style={{
+                                                width: 34,
+                                                height: 34,
+                                                borderRadius: "50%",
+                                                backgroundColor: "rgba(255, 255, 255, 0.04)",
+                                                border: "1px solid rgba(255, 255, 255, 0.09)",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                            }}
+                                        >
+                                            <Icon name="trend" size={16} sw={2.2} color="#94A3B8" />
                                         </div>
                                     </div>
                                 );

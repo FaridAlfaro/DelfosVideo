@@ -1,60 +1,73 @@
 // src/components/FinalOutro.tsx (240 frames = 52–60 s, f1560–f1800 global)
-// Rediseñado integralmente según END.mp4 manteniendo libreto y textos actuales.
-// RESTRICCIONES ESTRICTAS:
-// - BIN NUNCA usa efectos de neón ni en el logo ni en los videos.
-// - Logo BIN es SIEMPRE MONOCROMÁTICO (#ffffff).
-// - Animación del isotipo usa gradientes sobrios, NUNCA colores neón.
-// - Sin pulsos ni resplandores chillones.
-// - Animación del logo elegante: efecto saliendo detrás de una pared con desvanecido (BinLogoWallReveal).
-// - Ocupa SIEMPRE un máximo del 8% del alto de la pantalla (<= 86.4px -> 74px).
-// - El logo aparece SOLO; recién luego de su salida aparece el lema "Decide better."
+// Escena 6.1 (local 0–46, f1560–f1606): "Connect your entire stack." + píldoras estilo END.mp4 + esfera de gradiente índigo difuso.
+// Escena 6.2 (local 46–142, f1606–f1702): 32 frames exactos por tarjeta (Pipeline, Infrastructure, Intelligence) con morphing suave en tarjeta central y orbe rotatorio de fondo.
+// Escena 6.3 (local 142–172, f1702–f1732): "Everything. In ONE place." + 4 tarjetas convergiendo hacia el centro.
+// Escena 6.4 (local 172–206, f1732–f1766): Logo monocromático BIN (#ffffff, 76px) en solitario (escala 0.95->1.0 + blur(10px)->0px).
+// Escena 6.5 (local 206–240, f1766–f1800): "Decide better." en 92px serif itálica (Newsreader / serif) con gradiente blanco-plata y fade-out a negro absoluto en f1800.
 import React from "react";
-import { AbsoluteFill, useCurrentFrame } from "remotion";
+import { AbsoluteFill, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { BinLogoEditorialReveal } from "./BinBrand";
 import { CONNECTORS, OpenAiLogo, SnowflakeLogo } from "./Connectorlogos";
-import { FONT, GradientText, OUT, SERIF, ZoomBlurOut, lerp, ramp } from "./Theme";
+import { EDITORIAL, FONT, GradientText, IO, OUT, SERIF, ZoomBlurOut, lerp, ramp } from "./Theme";
 import { Icon } from "./Ui";
-import { BinLogoWallReveal } from "./BinBrand";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 1. CONECTA TU STACK — FLUJO DE PILLS CONECTADOS (Inspirado en END.mp4)
+// ESCENA 6.1: CONECTA TU STACK — FLUJO DE PÍLDORAS ESTILO END.mp4 (local 0–46)
 // ─────────────────────────────────────────────────────────────────────────────
 const StackPillFlow: React.FC<{ f: number }> = ({ f }) => {
     const titleP = ramp(f, 0, 10, OUT);
-    const flowP = ramp(f, 10, 24, OUT);
+    const flowP = ramp(f, 8, 22, OUT);
+
+    const orbX = lerp(-120, 120, f / 46);
+    const orbY = lerp(30, -30, f / 46);
 
     const nodes = [
-        { label: "Real-time Streams", icon: <Icon name="bolt" size={24} color="#14d9f5" /> },
+        { label: "Real-time Streams", icon: <Icon name="bolt" size={24} color="#F8FAFC" /> },
         { label: "Data Warehouse", icon: <SnowflakeLogo size={24} /> },
         { label: "AI Agents", icon: <OpenAiLogo size={24} /> },
     ];
 
     return (
-        <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 38 }}>
-                {/* Título de sección elegante */}
+        <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+            {/* Esfera de gradiente índigo difuso moviéndose detrás (Estilo END.mp4) */}
+            <div
+                style={{
+                    position: "absolute",
+                    width: 880,
+                    height: 620,
+                    borderRadius: "50%",
+                    background:
+                        "radial-gradient(circle at 50% 50%, rgba(67, 56, 202, 0.65) 0%, rgba(30, 58, 138, 0.45) 48%, rgba(109, 40, 217, 0.25) 72%, transparent 100%)",
+                    filter: "blur(65px)",
+                    transform: `translate(${orbX}px, ${orbY}px)`,
+                    pointerEvents: "none",
+                }}
+            />
+
+            <div style={{ position: "relative", zIndex: 5, display: "flex", flexDirection: "column", alignItems: "center", gap: 38 }}>
                 <h2
                     style={{
                         fontFamily: FONT,
                         fontSize: 68,
                         fontWeight: 700,
                         letterSpacing: "-0.03em",
-                        color: "#ffffff",
+                        color: "#F8FAFC",
                         margin: 0,
                         opacity: titleP,
-                        transform: `translateY(${(1 - titleP) * -20}px)`,
+                        transform: `translateY(${(1 - titleP) * -18}px)`,
                     }}
                 >
                     Connect your entire stack.
                 </h2>
 
-                {/* Cadena de Pills horizontales con flechas conectoras como en END.mp4 */}
+                {/* Cadena de Píldoras limpias estilo END.mp4 */}
                 <div
                     style={{
                         display: "flex",
                         alignItems: "center",
                         gap: 20,
                         opacity: flowP,
-                        transform: `scale(${lerp(0.95, 1, flowP)})`,
+                        transform: `scale(${lerp(0.96, 1, flowP)})`,
                     }}
                 >
                     {nodes.map((node, i) => (
@@ -65,17 +78,16 @@ const StackPillFlow: React.FC<{ f: number }> = ({ f }) => {
                                     alignItems: "center",
                                     gap: 14,
                                     padding: "16px 28px",
-                                    borderRadius: 30,
-                                    backgroundColor: "rgba(255, 255, 255, 0.08)",
-                                    border: "1px solid rgba(255, 255, 255, 0.16)",
-                                    boxShadow: "0 14px 40px rgba(0,0,0,0.5)",
-                                    backdropFilter: "blur(16px)",
+                                    borderRadius: 999,
+                                    backgroundColor: "rgba(12, 16, 26, 0.78)",
+                                    backdropFilter: "blur(24px)",
+                                    border: "1px solid rgba(255, 255, 255, 0.09)",
                                 }}
                             >
                                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                                     {node.icon}
                                 </div>
-                                <span style={{ fontFamily: FONT, fontSize: 22, fontWeight: 600, color: "#ffffff" }}>
+                                <span style={{ fontFamily: FONT, fontSize: 22, fontWeight: 600, color: "#F8FAFC" }}>
                                     {node.label}
                                 </span>
                             </div>
@@ -84,8 +96,8 @@ const StackPillFlow: React.FC<{ f: number }> = ({ f }) => {
                                 <svg width="28" height="24" viewBox="0 0 28 24" fill="none">
                                     <path
                                         d="M2 12H24M24 12L15 4M24 12L15 20"
-                                        stroke="#93c5fd"
-                                        strokeWidth="2.5"
+                                        stroke="#93C5FD"
+                                        strokeWidth="2.2"
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
                                     />
@@ -95,24 +107,25 @@ const StackPillFlow: React.FC<{ f: number }> = ({ f }) => {
                     ))}
                 </div>
 
-                {/* Conectores en cuadrícula suave (monocromática) */}
-                <div style={{ display: "flex", gap: 24, marginTop: 12, opacity: ramp(f, 20, 34, OUT) }}>
+                {/* Conectores en cuadrícula minimalista */}
+                <div style={{ display: "flex", gap: 22, marginTop: 10, opacity: ramp(f, 16, 30, OUT) }}>
                     {CONNECTORS.map(({ Logo, name }, i) => (
                         <div
                             key={name}
                             style={{
-                                width: 88,
-                                height: 88,
-                                borderRadius: 20,
+                                width: 86,
+                                height: 86,
+                                borderRadius: 22,
                                 backgroundColor: "rgba(255, 255, 255, 0.04)",
-                                border: "1px solid rgba(255, 255, 255, 0.08)",
+                                backdropFilter: "blur(24px)",
+                                border: "1px solid rgba(255, 255, 255, 0.09)",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
-                                transform: `translateY(${(1 - ramp(f, 18 + i * 2, 28 + i * 2, OUT)) * 30}px)`,
+                                transform: `translateY(${(1 - ramp(f, 14 + i * 2, 24 + i * 2, OUT)) * 22}px)`,
                             }}
                         >
-                            <Logo size={46} delay={i * 2} />
+                            <Logo size={44} delay={i * 2} />
                         </div>
                     ))}
                 </div>
@@ -122,71 +135,157 @@ const StackPillFlow: React.FC<{ f: number }> = ({ f }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 2. KEYWORDS INDIVIDUALES CON LECTURA CONFORTABLE (Inspirado en END.mp4)
+// ESCENA 6.2: MORPHING SUAVE DE CONTENIDO EN TARJETA CENTRAL (local 46–142 = 96f, 32f exactos por tarjeta)
 // ─────────────────────────────────────────────────────────────────────────────
-const KeywordSlide: React.FC<{
-    title: string;
-    subtitle: string;
-    badge: string;
-    icon: React.ReactNode;
-    f: number;
-}> = ({ title, subtitle, badge, icon, f }) => {
-    const p = ramp(f, 0, 8, OUT);
-    const exit = ramp(f, 26, 34, OUT);
-    const opacity = p * (1 - exit);
+const KEYWORD_SLIDES = [
+    {
+        badge: "Pipeline",
+        title: "Real-time Streams",
+        subtitle: "Continuous data synchronization across all channels",
+        icon: <Icon name="bolt" size={24} color="#F8FAFC" />,
+    },
+    {
+        badge: "Infrastructure",
+        title: "Data Warehouse",
+        subtitle: "Unified petabyte-scale storage & instant ingestion",
+        icon: <SnowflakeLogo size={24} />,
+    },
+    {
+        badge: "Intelligence",
+        title: "AI Agents",
+        subtitle: "Autonomous synthesis, reasoning, and strategic alerts",
+        icon: <OpenAiLogo size={24} />,
+    },
+];
+
+const MorphingKeywordStage: React.FC<{ f: number }> = ({ f }) => {
+    // f va de 0 a 96 (32 frames exactos por tarjeta: 0..32, 32..64, 64..96)
+    const idx = Math.min(2, Math.floor(f / 32));
+    const localF = f - idx * 32;
+    const slide = KEYWORD_SLIDES[idx];
+
+    // Entrada y salida del contenedor general (en 0..6 y 90..96)
+    const stageIn = ramp(f, 0, 6, OUT);
+    const stageOut = ramp(f, 90, 96, OUT);
+    const stageOpacity = stageIn * (1 - stageOut);
+
+    // Morphing interno suave de contenido dentro de los 32 frames de cada tarjeta
+    const contentIn = ramp(localF, 0, 6, OUT);
+    const contentOut = idx < 2 ? ramp(localF, 27, 32, IO) : 0;
+    const contentOpacity = contentIn * (1 - contentOut);
+    const contentY = (1 - contentIn) * 14 - contentOut * 12;
+    const contentBlur = (1 - contentIn) * 6 + contentOut * 6;
+
+    // El orbe de gradiente difuso del fondo rota ligeramente de posición (estilo END.mp4)
+    const orbAngle = lerp(-24, 32, f / 96);
+    const orbX = lerp(-140, 140, f / 96);
+    const orbY = Math.sin((f / 96) * Math.PI) * -45;
 
     return (
-        <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity }}>
+        <AbsoluteFill
+            style={{
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: stageOpacity,
+                overflow: "hidden",
+            }}
+        >
+            {/* Orbe de gradiente difuso rotando suavemente detrás */}
             <div
                 style={{
+                    position: "absolute",
+                    width: 860,
+                    height: 620,
+                    borderRadius: "50%",
+                    background:
+                        "radial-gradient(ellipse at 50% 50%, rgba(67, 56, 202, 0.72) 0%, rgba(30, 58, 138, 0.5) 45%, rgba(109, 40, 217, 0.28) 72%, transparent 100%)",
+                    filter: "blur(65px)",
+                    transform: `translate(${orbX}px, ${orbY}px) rotate(${orbAngle}deg)`,
+                    pointerEvents: "none",
+                }}
+            />
+
+            {/* Contenedor de tarjeta central persistente de cristal ahumado mate */}
+            <div
+                style={{
+                    position: "relative",
+                    zIndex: 5,
+                    width: 1120,
+                    padding: "64px 72px",
+                    borderRadius: 44,
+                    backgroundColor: "rgba(12, 16, 26, 0.78)",
+                    backdropFilter: "blur(24px)",
+                    border: "1px solid rgba(255, 255, 255, 0.09)",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    gap: 22,
-                    transform: `scale(${lerp(0.96, 1.02, f / 34)})`,
+                    justifyContent: "center",
                 }}
             >
-                {/* Badge minimalista */}
                 <div
                     style={{
-                        padding: "8px 20px",
-                        borderRadius: 20,
-                        backgroundColor: "rgba(255, 255, 255, 0.08)",
-                        border: "1px solid rgba(255, 255, 255, 0.14)",
-                        fontFamily: FONT,
-                        fontSize: 15,
-                        fontWeight: 600,
-                        color: "#93c5fd",
-                        letterSpacing: "0.08em",
-                        textTransform: "uppercase",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: 22,
+                        opacity: contentOpacity,
+                        transform: `translateY(${contentY}px)`,
+                        filter: `blur(${contentBlur}px)`,
                     }}
                 >
-                    {badge}
-                </div>
-
-                {/* Gran título legible */}
-                <h2
-                    style={{
-                        fontFamily: FONT,
-                        fontSize: 88,
-                        fontWeight: 700,
-                        letterSpacing: "-0.03em",
-                        color: "#ffffff",
-                        margin: 0,
-                        textAlign: "center",
-                    }}
-                >
-                    {title}
-                </h2>
-
-                {/* Subtítulo descriptivo con icono */}
-                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                    <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        {icon}
+                    {/* Badge minimalista */}
+                    <div
+                        style={{
+                            padding: "8px 22px",
+                            borderRadius: 999,
+                            backgroundColor: "rgba(255, 255, 255, 0.08)",
+                            border: "1px solid rgba(255, 255, 255, 0.14)",
+                            fontFamily: FONT,
+                            fontSize: 14,
+                            fontWeight: 600,
+                            color: "#CBD5E1",
+                            letterSpacing: "0.08em",
+                            textTransform: "uppercase",
+                        }}
+                    >
+                        {slide.badge}
                     </div>
-                    <span style={{ fontFamily: FONT, fontSize: 24, color: "#cbd5e1", fontWeight: 500 }}>
-                        {subtitle}
-                    </span>
+
+                    {/* Gran título legible */}
+                    <h2
+                        style={{
+                            fontFamily: FONT,
+                            fontSize: 84,
+                            fontWeight: 700,
+                            letterSpacing: "-0.03em",
+                            color: "#F8FAFC",
+                            margin: 0,
+                            textAlign: "center",
+                        }}
+                    >
+                        {slide.title}
+                    </h2>
+
+                    {/* Subtítulo descriptivo con icono */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                        <div
+                            style={{
+                                width: 44,
+                                height: 44,
+                                borderRadius: 12,
+                                backgroundColor: "rgba(255, 255, 255, 0.04)",
+                                border: "1px solid rgba(255, 255, 255, 0.09)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                            }}
+                        >
+                            {slide.icon}
+                        </div>
+                        <span style={{ fontFamily: FONT, fontSize: 24, color: "#CBD5E1", fontWeight: 500 }}>
+                            {slide.subtitle}
+                        </span>
+                    </div>
                 </div>
             </div>
         </AbsoluteFill>
@@ -194,60 +293,94 @@ const KeywordSlide: React.FC<{
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 3. TODO EN UN SOLO LUGAR (Convergencia unificada inspirada en END.mp4)
+// ESCENA 6.3: CONVERGENCIA UNIFICADA — "Everything. In ONE place." (local 142–172)
 // ─────────────────────────────────────────────────────────────────────────────
 const UnifiedConvergence: React.FC<{ f: number }> = ({ f }) => {
-    const p = ramp(f, 0, 8, OUT);
-    const exit = ramp(f, 22, 28, OUT);
+    const { fps } = useVideoConfig();
+    const p = ramp(f, 0, 7, OUT);
+    const exit = ramp(f, 24, 30, OUT);
 
     const items = [
-        { label: "Signals", value: "2.4M" },
-        { label: "Net Positive", value: "84%" },
-        { label: "Trajectory", value: "+38%" },
-        { label: "Adoption", value: "99.4%" },
+        { label: "Signals", value: "2.4M", startX: -60, startY: 28 },
+        { label: "Net Positive", value: "84%", startX: -20, startY: 32 },
+        { label: "Trajectory", value: "+38%", startX: 20, startY: 32 },
+        { label: "Adoption", value: "99.4%", startX: 60, startY: 28 },
     ];
 
     return (
-        <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity: p * (1 - exit) }}>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 32 }}>
+        <AbsoluteFill
+            style={{
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: p * (1 - exit),
+                filter: `blur(${exit * 10}px)`,
+            }}
+        >
+            <div
+                style={{
+                    position: "absolute",
+                    width: 780,
+                    height: 520,
+                    borderRadius: "50%",
+                    background:
+                        "radial-gradient(circle, rgba(67, 56, 202, 0.55) 0%, rgba(30, 58, 138, 0.35) 50%, transparent 100%)",
+                    filter: "blur(65px)",
+                    pointerEvents: "none",
+                }}
+            />
+
+            <div style={{ position: "relative", zIndex: 5, display: "flex", flexDirection: "column", alignItems: "center", gap: 34 }}>
                 <h2
                     style={{
                         fontFamily: FONT,
                         fontSize: 80,
                         fontWeight: 700,
                         letterSpacing: "-0.03em",
-                        color: "#ffffff",
+                        color: "#F8FAFC",
                         margin: 0,
                     }}
                 >
                     Everything. In ONE place.
                 </h2>
 
-                {/* Cuadrícula de 4 cards minimalistas de datos convergentes */}
                 <div style={{ display: "flex", gap: 20 }}>
                     {items.map((it, i) => {
-                        const cardP = ramp(f, 4 + i * 3, 16 + i * 3, OUT);
+                        const conv = spring({
+                            frame: Math.max(0, f - i * 2),
+                            fps,
+                            config: { damping: 22, stiffness: 170 },
+                        });
                         return (
                             <div
                                 key={it.label}
                                 style={{
                                     width: 220,
                                     padding: "24px 20px",
-                                    borderRadius: 20,
-                                    backgroundColor: "rgba(255, 255, 255, 0.05)",
-                                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                                    borderRadius: 22,
+                                    backgroundColor: "rgba(12, 16, 26, 0.78)",
+                                    backdropFilter: "blur(24px)",
+                                    border: "1px solid rgba(255, 255, 255, 0.09)",
                                     display: "flex",
                                     flexDirection: "column",
                                     alignItems: "center",
                                     gap: 6,
-                                    opacity: cardP,
-                                    transform: `translateY(${(1 - cardP) * 24}px)`,
+                                    opacity: conv,
+                                    transform: `translate(${lerp(it.startX, 0, conv)}px, ${lerp(it.startY, 0, conv)}px) scale(${lerp(0.92, 1, conv)})`,
                                 }}
                             >
-                                <span style={{ fontFamily: FONT, fontSize: 14, color: "#8b949e", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                                <span
+                                    style={{
+                                        fontFamily: FONT,
+                                        fontSize: 13,
+                                        color: "#94A3B8",
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.08em",
+                                        fontWeight: 600,
+                                    }}
+                                >
                                     {it.label}
                                 </span>
-                                <span style={{ fontFamily: FONT, fontSize: 44, fontWeight: 700, color: "#ffffff" }}>
+                                <span style={{ fontFamily: FONT, fontSize: 44, fontWeight: 700, color: "#F8FAFC" }}>
                                     {it.value}
                                 </span>
                             </div>
@@ -260,59 +393,68 @@ const UnifiedConvergence: React.FC<{ f: number }> = ({ f }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 4A. FINALE: LOGO BIN COMPLETAMENTE SOLO (Efecto salida detrás de pared)
+// ESCENA 6.4: LOGO BIN EN SOLITARIO (local 172–206, 34 frames)
 // ─────────────────────────────────────────────────────────────────────────────
 const SoloBinLogoFinale: React.FC<{ f: number }> = ({ f }) => {
     return (
         <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
-            {/* Animación del Logo BIN saliendo de la pared:
-                - Estrictamente monocromático (#ffffff)
-                - Altura máx 76px (<= 8% de 1080)
-                - Cero neón, cero pulsos */}
-            <BinLogoWallReveal
+            <BinLogoEditorialReveal
                 frame={f}
                 startFrame={0}
-                duration={16}
-                exitFrame={26}
+                duration={18}
+                exitFrame={24}
                 height={76}
                 color="#ffffff"
+                initialScale={0.95}
+                initialBlur={10}
             />
         </AbsoluteFill>
     );
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 4B. LEMA "Decide better." — APARECE RECIÉN LUEGO DE LA SALIDA DEL LOGO
+// ESCENA 6.5: "Decide better." + FADE-OUT A NEGRO ABSOLUTO EN f1800 (local 206–240, 34 frames)
 // ─────────────────────────────────────────────────────────────────────────────
 const DecideBetterFinale: React.FC<{ f: number }> = ({ f }) => {
-    // Entrada elegante de texto desvaneciéndose en escala de grises / plata / azul profundo
-    const p = ramp(f, 0, 10, OUT);
-    const scale = lerp(0.96, 1.02, ramp(f, 0, 36, OUT));
+    const enterP = ramp(f, 0, 12, EDITORIAL);
+    const scale = lerp(0.96, 1.0, ramp(f, 0, 28, OUT));
+    const blur = lerp(8, 0, enterP);
+    // Fade-out a negro absoluto en el frame 1800 (local 34)
+    const fadeToBlack = ramp(f, 26, 34, OUT);
 
     return (
         <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
             <div
                 style={{
-                    opacity: p,
+                    opacity: enterP * (1 - fadeToBlack),
                     transform: `scale(${scale})`,
+                    filter: `blur(${blur}px)`,
                     textAlign: "center",
                 }}
             >
                 <GradientText
-                    colors={["#ffffff", "#cbd5e1", "#93c5fd", "#e2e8f0", "#ffffff"]}
-                    speed={1.5}
+                    colors={["#FFFFFF", "#F8FAFC", "#CBD5E1", "#94A3B8", "#FFFFFF"]}
+                    speed={1.2}
                     style={{
                         fontFamily: SERIF,
                         fontStyle: "italic",
                         fontSize: 92,
-                        fontWeight: 700,
+                        fontWeight: 600,
                         letterSpacing: "-0.02em",
-                        textShadow: "0 10px 40px rgba(0,0,0,0.8)",
                     }}
                 >
                     Decide better.
                 </GradientText>
             </div>
+
+            {/* Fade-out a negro absoluto (#000000) en el frame 1800 */}
+            <AbsoluteFill
+                style={{
+                    backgroundColor: "#000000",
+                    opacity: fadeToBlack,
+                    pointerEvents: "none",
+                }}
+            />
         </AbsoluteFill>
     );
 };
@@ -325,65 +467,29 @@ export const FinalOutro: React.FC = () => {
 
     return (
         <AbsoluteFill>
-            {/* 1. Connect your entire stack (local 0–46) */}
+            {/* Escena 6.1 · Connect your entire stack (local 0–46, f1560–f1606) */}
             {f < 46 && (
                 <ZoomBlurOut frames={4}>
                     <StackPillFlow f={f} />
                 </ZoomBlurOut>
             )}
 
-            {/* 2. Keywords individuales con lectura cómoda (local 46–142) */}
-            {f >= 46 && f < 78 && (
-                <ZoomBlurOut frames={3}>
-                    <KeywordSlide
-                        title="Real-time Streams"
-                        subtitle="Continuous data synchronization across all channels"
-                        badge="Pipeline"
-                        icon={<Icon name="bolt" size={24} color="#14d9f5" />}
-                        f={f - 46}
-                    />
-                </ZoomBlurOut>
-            )}
-            {f >= 78 && f < 110 && (
-                <ZoomBlurOut frames={3}>
-                    <KeywordSlide
-                        title="Data Warehouse"
-                        subtitle="Unified petabyte-scale storage & instant ingestion"
-                        badge="Infrastructure"
-                        icon={<SnowflakeLogo size={24} />}
-                        f={f - 78}
-                    />
-                </ZoomBlurOut>
-            )}
-            {f >= 110 && f < 142 && (
-                <ZoomBlurOut frames={3}>
-                    <KeywordSlide
-                        title="AI Agents"
-                        subtitle="Autonomous synthesis, reasoning, and strategic alerts"
-                        badge="Intelligence"
-                        icon={<OpenAiLogo size={24} />}
-                        f={f - 110}
-                    />
-                </ZoomBlurOut>
+            {/* Escena 6.2 · 32f exactos por tarjeta con morphing suave y orbe rotatorio (local 46–142, f1606–f1702) */}
+            {f >= 46 && f < 142 && (
+                <MorphingKeywordStage f={f - 46} />
             )}
 
-            {/* 3. Everything. In ONE place. (local 142–172) */}
+            {/* Escena 6.3 · Everything. In ONE place. (local 142–172, f1702–f1732) */}
             {f >= 142 && f < 172 && (
-                <ZoomBlurOut frames={4}>
-                    <UnifiedConvergence f={f - 142} />
-                </ZoomBlurOut>
+                <UnifiedConvergence f={f - 142} />
             )}
 
-            {/* 4A. Logo BIN aparece COMPLETAMENTE SOLO (local 172–206, 34 frames)
-                - Saliendo de detrás de la pared
-                - Monocromático (#ffffff)
-                - Máximo 8% del alto de la pantalla (76px)
-                - Cero neón, cero pulsos */}
+            {/* Escena 6.4 · Logo BIN en solitario (local 172–206, f1732–f1766) */}
             {f >= 172 && f < 206 && (
                 <SoloBinLogoFinale f={f - 172} />
             )}
 
-            {/* 4B. Recién LUEGO de la salida del logo aparece el lema "Decide better." (local 206–240, 34 frames) */}
+            {/* Escena 6.5 · "Decide better." + fade-out a negro absoluto en f1800 (local 206–240, f1766–f1800) */}
             {f >= 206 && (
                 <DecideBetterFinale f={f - 206} />
             )}

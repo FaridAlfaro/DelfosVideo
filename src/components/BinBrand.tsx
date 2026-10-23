@@ -1,39 +1,34 @@
-// src/components/BinBrand.tsx — Monochromatic Brand assets and AI query loader components for BIN
-// STRICT RESTRICTIONS:
-// - BIN NEVER uses neon effects anywhere (no neon drop-shadows, no neon pulses).
-// - BIN logo is ALWAYS monochromatic (#ffffff or grayscale).
-// - Isotipo uses subtle, elegant gradients or monochromatic tones, NEVER neon colors.
-// - Logo animations must be elegant: wall-reveal effect with opacity fade.
-// - Logo ALWAYS occupies a MAXIMUM of 8% of the screen height (<= 86.4px for 1080p).
+// src/components/BinBrand.tsx — Official Monochromatic BIN Brand Assets (Zero Neon, No Custom Loaders)
 import React from "react";
-import { OUT, ramp } from "./Theme";
+import { EDITORIAL, OUT, lerp, ramp } from "./Theme";
 
 export const BIN_PALETTE = {
-    abyss: "#010208",
-    deep: "#030a2e",
-    cobalt: "#0029c7",
-    electricBlue: "#1461e0",
-    auroraCyan: "#14d9f5",
-    nightViolet: "#521fd9",
-    silver: "#f2f5fa",
-    mutedSlate: "#8b949e",
+    abyss: "#02040A",
+    sapphire: "#1E3A8A",
+    indigo: "#4338CA",
+    violet: "#6D28D9",
+    silver: "#F8FAFC",
+    mutedSlate: "#94A3B8",
 };
 
-/** BIN 4-dots diamond isotipo — Monochromatic or elegant subtle gradient, ZERO neon */
+/**
+ * Official BIN 4-dots diamond isotipo (public/assets/isotipo.svg)
+ * Strictly monochromatic (#ffffff), zero neon shadows or glows.
+ */
 export const BinIsotipo: React.FC<{
     size?: number;
     color?: string;
     style?: React.CSSProperties;
     rotation?: number;
-}> = ({ size = 64, color = "#ffffff", style, rotation = 0 }) => {
+}> = ({ size = 32, color = "#ffffff", style, rotation = 0 }) => {
     return (
         <svg
             width={size}
             height={size}
             viewBox="0 0 198.25711 198.25919"
             style={{
-                display: "inline-block",
-                verticalAlign: "middle",
+                display: "block",
+                flexShrink: 0,
                 overflow: "visible",
                 transform: rotation ? `rotate(${rotation}deg)` : undefined,
                 ...style,
@@ -51,145 +46,16 @@ export const BinIsotipo: React.FC<{
     );
 };
 
-/** Loader 1: 4 circles in diagonal orientation */
-export const BinLoader1: React.FC<{
-    size?: number;
-    color?: string;
-    rotation?: number;
-    style?: React.CSSProperties;
-}> = ({ size = 64, color = "#ffffff", rotation = 0, style }) => {
-    return (
-        <svg
-            width={size}
-            height={size}
-            viewBox="0 0 161.64711 161.64711"
-            style={{
-                display: "inline-block",
-                overflow: "visible",
-                transform: `rotate(${rotation}deg)`,
-                ...style,
-            }}
-        >
-            <g transform="translate(-11650.805,24273.174)">
-                <g transform="matrix(0.74906254,0.74906254,-0.74906254,0.74906254,-14168.265,-14317.017)">
-                    <circle cx="10696.41" cy="-23939" r="34.577244" fill={color} />
-                    <circle cx="10696.41" cy="-23821.002" r="34.577244" fill={color} />
-                    <circle cx="10637.41" cy="-23880" r="34.577244" fill={color} />
-                    <circle cx="10755.41" cy="-23880" r="34.577244" fill={color} />
-                </g>
-            </g>
-        </svg>
-    );
-};
-
-/** Loader 2: 8 circles double cross / star */
-export const BinLoader2: React.FC<{
-    size?: number;
-    color?: string;
-    rotation?: number;
-    style?: React.CSSProperties;
-}> = ({ size = 64, color = "#ffffff", rotation = 0, style }) => {
-    return (
-        <svg
-            width={size}
-            height={size}
-            viewBox="0 0 198.25919 198.25711"
-            style={{
-                display: "inline-block",
-                overflow: "visible",
-                transform: `rotate(${rotation}deg)`,
-                ...style,
-            }}
-        >
-            <g transform="translate(-11841.505,24291.478)">
-                <g transform="matrix(1.0593344,0,0,1.0593344,609.55935,1104.5573)">
-                    <circle cx="10696.41" cy="-23939" r="34.577244" fill={color} />
-                    <circle cx="10696.41" cy="-23821.002" r="34.577244" fill={color} />
-                    <circle cx="10637.41" cy="-23880" r="34.577244" fill={color} />
-                    <circle cx="10755.41" cy="-23880" r="34.577244" fill={color} />
-                </g>
-                <g transform="matrix(0.74906254,0.74906254,-0.74906254,0.74906254,-13959.26,-14317.015)">
-                    <circle cx="10696.41" cy="-23939" r="34.577244" fill={color} />
-                    <circle cx="10696.41" cy="-23821.002" r="34.577244" fill={color} />
-                    <circle cx="10637.41" cy="-23880" r="34.577244" fill={color} />
-                    <circle cx="10755.41" cy="-23880" r="34.577244" fill={color} />
-                </g>
-            </g>
-        </svg>
-    );
-};
-
-/** Loader 3: 8-petal spiral flower / mandala */
-export const BinLoader3: React.FC<{
-    size?: number;
-    color?: string;
-    rotation?: number;
-    style?: React.CSSProperties;
-}> = ({ size = 64, color = "#ffffff", rotation = 0, style }) => {
-    return (
-        <svg
-            width={size}
-            height={size}
-            viewBox="0 0 198.25999 198.258"
-            style={{
-                display: "inline-block",
-                overflow: "visible",
-                transform: `rotate(${rotation}deg)`,
-                ...style,
-            }}
-        >
-            <g transform="translate(-12124,24291.479)">
-                <g>
-                    <path
-                        d="m 12144.229,-24225.031 a 36.628864,36.628864 0 0 1 16.4,-3.948 36.628864,36.628864 0 0 1 34.699,24.94 36.628864,36.628864 0 0 0 9.508,-6.604 36.628864,36.628864 0 0 0 6.902,-9.63 36.628864,36.628864 0 0 1 -25.238,-34.577 36.628864,36.628864 0 0 1 3.949,-16.4 36.628864,36.628864 0 0 0 -37.414,8.805 36.628864,36.628864 0 0 0 -8.806,37.414 z"
-                        fill={color}
-                    />
-                    <path
-                        d="m 12190.449,-24113.449 a 36.628864,36.628864 0 0 1 -3.949,-16.401 36.628864,36.628864 0 0 1 25.238,-34.576 36.628864,36.628864 0 0 0 -6.902,-9.631 36.628864,36.628864 0 0 0 -9.701,-6.697 36.628864,36.628864 0 0 1 -34.506,25.033 36.628864,36.628864 0 0 1 -16.4,-3.945 36.628864,36.628864 0 0 0 8.806,37.41 36.628864,36.628864 0 0 0 37.414,8.807 z"
-                        fill={color}
-                    />
-                    <path
-                        d="m 12302.078,-24159.695 a 36.628864,36.628864 0 0 1 -16.447,3.974 36.628864,36.628864 0 0 1 -34.506,-25.033 36.628864,36.628864 0 0 0 -9.701,6.699 36.628864,36.628864 0 0 0 -6.604,9.504 36.628864,36.628864 0 0 1 24.938,34.701 36.628864,36.628864 0 0 1 -3.947,16.401 36.628864,36.628864 0 0 0 37.414,-8.805 36.628864,36.628864 0 0 0 8.853,-37.441 z"
-                        fill={color}
-                    />
-                    <path
-                        d="m 12255.865,-24271.264 a 36.628864,36.628864 0 0 1 3.893,16.414 36.628864,36.628864 0 0 1 -25.031,34.506 36.628864,36.628864 0 0 0 6.697,9.701 36.628864,36.628864 0 0 0 9.701,6.698 36.628864,36.628864 0 0 1 34.506,-25.034 36.628864,36.628864 0 0 1 16.469,3.918 36.628864,36.628864 0 0 0 -8.875,-37.384 36.628864,36.628864 0 0 0 -37.36,-8.819 z"
-                        fill={color}
-                    />
-                    <path
-                        d="m 12144.229,-24159.666 a 36.628864,36.628864 0 0 1 8.806,-14.391 36.628864,36.628864 0 0 1 42.1,-6.697 36.628864,36.628864 0 0 0 2.123,-11.596 36.628864,36.628864 0 0 0 -1.93,-11.689 36.628864,36.628864 0 0 1 -42.293,-6.604 36.628864,36.628864 0 0 1 -8.806,-14.388 36.628864,36.628864 0 0 0 -20.229,32.681 36.628864,36.628864 0 0 0 20.229,32.684 z"
-                        fill={color}
-                    />
-                    <path
-                        d="m 12255.811,-24113.449 a 36.628864,36.628864 0 0 1 -14.387,-8.805 36.628864,36.628864 0 0 1 -6.604,-42.297 36.628864,36.628864 0 0 0 -11.691,-1.928 36.628864,36.628864 0 0 0 -11.391,2.053 36.628864,36.628864 0 0 1 -6.902,42.17 36.628864,36.628864 0 0 1 -14.387,8.807 36.628864,36.628864 0 0 0 32.68,20.228 36.628864,36.628864 0 0 0 32.682,-20.228 z"
-                        fill={color}
-                    />
-                    <path
-                        d="m 12251.125,-24203.945 a 36.628864,36.628864 0 0 0 -2.123,11.595 36.628864,36.628864 0 0 0 2.123,11.596 36.628864,36.628864 0 0 1 42.1,6.699 36.628864,36.628864 0 0 1 8.853,14.36 36.628864,36.628864 0 0 0 20.182,-32.655 36.628864,36.628864 0 0 0 -20.16,-32.711 36.628864,36.628864 0 0 1 -8.875,14.418 36.628864,36.628864 0 0 1 -42.1,6.698 z"
-                        fill={color}
-                    />
-                    <path
-                        d="m 12223.129,-24291.479 a 36.628864,36.628864 0 0 0 -32.68,20.229 36.628864,36.628864 0 0 1 14.387,8.805 36.628864,36.628864 0 0 1 6.902,42.172 36.628864,36.628864 0 0 0 11.391,2.052 36.628864,36.628864 0 0 0 11.598,-2.123 36.628864,36.628864 0 0 1 6.697,-42.101 36.628864,36.628864 0 0 1 14.441,-8.819 36.628864,36.628864 0 0 0 -32.736,-20.215 z"
-                        fill={color}
-                    />
-                </g>
-            </g>
-        </svg>
-    );
-};
-
 /**
  * Full Monochromatic BIN Logo (Wordmark + diamond 4-dot isotipo)
- * STRICT REQUIREMENT: Max height 8% of 1080 = 86px!
- * Default height: 76px. ZERO neon effects.
+ * Strictly monochromatic (#ffffff), max height 76px (<= 8% of 1080p).
  */
 export const BinFullLogo: React.FC<{
     height?: number;
     color?: string;
     style?: React.CSSProperties;
 }> = ({ height = 76, color = "#ffffff", style }) => {
-    // Strictly cap at 86px (8% of 1080)
-    const clampedHeight = Math.min(86, height);
+    const clampedHeight = Math.min(76, height);
     const computedWidth = clampedHeight * (812.518 / 482.115);
     return (
         <svg
@@ -217,7 +83,7 @@ export const BinFullLogo: React.FC<{
                             fill={color}
                         />
                     </g>
-                    {/* Top-right Isotipo — Monochromatic matching */}
+                    {/* Top-right Isotipo */}
                     <g transform="matrix(1.0593344,0,0,1.0593344,-4.6871542,1442.1463)">
                         <circle cx="10696.41" cy="-23939" r="34.577244" fill={color} />
                         <circle cx="10696.41" cy="-23821.002" r="34.577244" fill={color} />
@@ -231,53 +97,72 @@ export const BinFullLogo: React.FC<{
 };
 
 /**
- * Architectural Wall-Reveal Animation for BIN Logo:
- * - Effect: Rising gracefully from behind an invisible horizontal edge with smooth opacity dissolve.
- * - Always strictly <= 8% screen height (clamped at 76px).
- * - Monochromatic (#ffffff), ZERO neon, ZERO pulse.
+ * Ultra-Clean Editorial Reveal for BIN Logo (Scenes 3.2 & 6.4):
+ * - Scale 0.94 -> 1.0, opacity 0 -> 1, optical blur 12px -> 0px over 22 frames using Easing.bezier(0.16, 1, 0.3, 1)
+ * - Subtle breathing indigo/silver aurora behind the logo (opacity 0.25, blur(60px)), zero flash, zero shockwave.
  */
-export const BinLogoWallReveal: React.FC<{
+export const BinLogoEditorialReveal: React.FC<{
     frame: number;
     startFrame?: number;
     duration?: number;
     exitFrame?: number;
     height?: number;
     color?: string;
+    initialScale?: number;
+    initialBlur?: number;
 }> = ({
     frame,
     startFrame = 0,
-    duration = 16,
-    exitFrame = 36,
+    duration = 22,
+    exitFrame,
     height = 76,
     color = "#ffffff",
+    initialScale = 0.94,
+    initialBlur = 12,
 }) => {
-    // Reveal progress (0 to 1)
-    const p = ramp(frame, startFrame, startFrame + duration, OUT);
-    // Exit progress (0 to 1)
+    const p = ramp(frame, startFrame, startFrame + duration, EDITORIAL);
     const isExit = exitFrame !== undefined && frame >= exitFrame;
     const exitP = isExit ? ramp(frame, exitFrame, exitFrame + 10, OUT) : 0;
 
-    const clampedHeight = Math.min(84, height);
-    const containerH = clampedHeight + 14;
-
-    // Architectural slide up from behind baseline
-    const translateY = (1 - p) * 105 - exitP * 12;
+    const clampedHeight = Math.min(76, height);
+    const scale = lerp(initialScale, 1.0, p) * lerp(1.0, 0.98, exitP);
+    const blur = lerp(initialBlur, 0, p) + exitP * 8;
     const opacity = p * (1 - exitP);
+    const breathe = 0.96 + 0.06 * Math.sin((frame - startFrame) * 0.12);
+
+    if (opacity <= 0.001) return null;
 
     return (
         <div
             style={{
                 position: "relative",
-                display: "inline-block",
-                height: containerH,
-                overflow: "hidden", // The wall mask
-                verticalAlign: "middle",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
             }}
         >
+            {/* Subtle breathing indigo/silver aurora behind the logo */}
             <div
                 style={{
-                    transform: `translateY(${translateY}%)`,
+                    position: "absolute",
+                    width: 420,
+                    height: 220,
+                    borderRadius: "50%",
+                    background:
+                        "radial-gradient(ellipse at 50% 50%, rgba(67, 56, 202, 0.7) 0%, rgba(30, 58, 138, 0.45) 48%, rgba(248, 250, 252, 0.15) 75%, transparent 100%)",
+                    filter: "blur(60px)",
+                    opacity: 0.25 * opacity,
+                    transform: `scale(${breathe})`,
+                    pointerEvents: "none",
+                }}
+            />
+            <div
+                style={{
+                    position: "relative",
+                    zIndex: 2,
                     opacity,
+                    transform: `scale(${scale})`,
+                    filter: `blur(${blur}px)`,
                 }}
             >
                 <BinFullLogo height={clampedHeight} color={color} />
@@ -286,86 +171,4 @@ export const BinLogoWallReveal: React.FC<{
     );
 };
 
-/**
- * AI Query Thinking Animation:
- * Smooth gradient transitions between loaders, ZERO neon.
- */
-export const BinAiThinking: React.FC<{
-    frame: number;
-    size?: number;
-    starScale?: number;
-}> = ({ frame, size = 300, starScale = 1 }) => {
-    const rot = frame * 3.5;
-
-    const p1 = ramp(frame, 0, 14, OUT);
-    const p2 = ramp(frame, 14, 28, OUT);
-    const p3 = ramp(frame, 28, 48, OUT);
-
-    const l1Scale = (1 - p2) * p1;
-    const l2Scale = (1 - p3) * p2;
-    const l3Scale = p3;
-
-    return (
-        <div
-            style={{
-                position: "relative",
-                width: size,
-                height: size,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transform: `scale(${starScale})`,
-            }}
-        >
-            {/* Stage 1: Loader 1 */}
-            {l1Scale > 0.01 && (
-                <div
-                    style={{
-                        position: "absolute",
-                        opacity: l1Scale,
-                        transform: `scale(${l1Scale}) rotate(${rot * 1.5}deg)`,
-                    }}
-                >
-                    <BinLoader1 size={size * 0.65} color="#1461e0" />
-                </div>
-            )}
-
-            {/* Stage 2: Loader 2 */}
-            {l2Scale > 0.01 && (
-                <div
-                    style={{
-                        position: "absolute",
-                        opacity: l2Scale,
-                        transform: `scale(${l2Scale}) rotate(${rot * 1.1}deg)`,
-                    }}
-                >
-                    <BinLoader2 size={size * 0.8} color="#521fd9" />
-                </div>
-            )}
-
-            {/* Stage 3: Loader 3 */}
-            {l3Scale > 0.01 && (
-                <div
-                    style={{
-                        position: "absolute",
-                        opacity: Math.min(1, l3Scale),
-                        transform: `scale(${l3Scale}) rotate(${rot * 0.75}deg)`,
-                    }}
-                >
-                    <BinLoader3 size={size * 0.95} color="#f2f5fa" />
-                </div>
-            )}
-
-            {/* Center diamond core: Monochromatic BIN Isotipo */}
-            <div
-                style={{
-                    position: "absolute",
-                    transform: `rotate(${frame * -1.2}deg)`,
-                    zIndex: 10,
-                }}
-            >
-                <BinIsotipo size={size * 0.38} color="#ffffff" />
-            </div>
-        </div>
-    );
-};
+export const BinLogoWallReveal = BinLogoEditorialReveal;

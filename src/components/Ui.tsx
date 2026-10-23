@@ -1,19 +1,17 @@
-// src/components/ui.tsx — Tile, Icon, Cursor, Isotipo, GradientWipe
+// src/components/Ui.tsx — Minimalist Smoked Glass Primitives, Icon, Cursor, Isotipo, GradientWipe (Zero Neon)
 import React from "react";
 import { AbsoluteFill } from "remotion";
-
 import { lerp } from "./Theme";
-
 import { BinIsotipo } from "./BinBrand";
 
-export const Isotipo: React.FC<{ size?: number; color?: string; style?: React.CSSProperties }> = ({
-    size = 64,
+export const Isotipo: React.FC<{ size?: number; color?: string; style?: React.CSSProperties; rotation?: number }> = ({
+    size = 32,
     color = "#ffffff",
     style,
-}) => <BinIsotipo size={size} color={color} style={style} />;
+    rotation = 0,
+}) => <BinIsotipo size={size} color={color} style={style} rotation={rotation} />;
 
-
-/** Teselas de vidrio oscuro con borde superior iluminado (como en el dock de "Connectors") */
+/** Minimalist Matte Smoked Glass Tile */
 export const Tile: React.FC<{
     size?: number;
     radius?: number;
@@ -25,9 +23,9 @@ export const Tile: React.FC<{
             width: size,
             height: size,
             borderRadius: radius ?? size * 0.28,
-            background: "linear-gradient(145deg, rgba(44,46,62,0.96), rgba(18,20,30,0.96))",
-            border: "1px solid rgba(255,255,255,0.12)",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.16), 0 14px 34px rgba(0,0,0,0.65)",
+            backgroundColor: "rgba(12, 16, 26, 0.78)",
+            backdropFilter: "blur(24px)",
+            border: "1px solid rgba(255, 255, 255, 0.09)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -124,7 +122,7 @@ export const Icon: React.FC<{ name: IconName; size?: number; color?: string; sw?
     );
 };
 
-/** Cursor tipo puntero con efecto de pulsación */
+/** Vector pointer cursor */
 export const Cursor: React.FC<{ x: number; y: number; press?: number; size?: number; opacity?: number }> = ({
     x,
     y,
@@ -142,7 +140,6 @@ export const Cursor: React.FC<{ x: number; y: number; press?: number; size?: num
             opacity,
             transform: `translate(-6px, -4px) scale(${1 - 0.14 * press})`,
             transformOrigin: "10% 8%",
-            filter: "drop-shadow(0 6px 10px rgba(0,0,0,0.55))",
             pointerEvents: "none",
             zIndex: 100,
         }}
@@ -153,7 +150,7 @@ export const Cursor: React.FC<{ x: number; y: number; press?: number; size?: num
     </div>
 );
 
-/** Barrido de gradiente borroso entre pantallas. p: 0→1 (ya con easing) */
+/** Organic gradient transition wipe (Style END.mp4 — Sapphire, Indigo, Soft Violet, Silver) */
 export const GradientWipe: React.FC<{ p: number }> = ({ p }) => {
     if (p <= 0 || p >= 1) return null;
     return (
@@ -167,10 +164,10 @@ export const GradientWipe: React.FC<{ p: number }> = ({ p }) => {
                     height: 2600,
                     marginTop: -1300,
                     marginLeft: -1100,
-                    transform: `translateX(${lerp(-2700, 2700, p)}px) rotate(-18deg)`,
+                    transform: `translateX(${lerp(-2700, 2700, p)}px) rotate(-16deg)`,
                     background:
-                        "linear-gradient(90deg, rgba(59,130,246,0) 0%, #3b82f6 22%, #a855f7 40%, #ec4899 58%, #fb923c 76%, rgba(251,146,60,0) 100%)",
-                    filter: "blur(70px)",
+                        "linear-gradient(90deg, rgba(30,58,138,0) 0%, #1E3A8A 24%, #4338CA 44%, #6D28D9 62%, rgba(248,250,252,0.45) 78%, rgba(248,250,252,0) 100%)",
+                    filter: "blur(65px)",
                 }}
             />
         </AbsoluteFill>

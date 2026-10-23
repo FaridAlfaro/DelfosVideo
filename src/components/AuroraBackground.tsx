@@ -1,144 +1,92 @@
-// src/components/AuroraBackground.tsx — Grainy liquid gradient inspired by GrainyGradient.tsx
+// src/components/AuroraBackground.tsx — Organic diffused gradient spheres (Style END.mp4, Zero Neon)
 import React from "react";
 import { AbsoluteFill, interpolate, interpolateColors, useCurrentFrame } from "remotion";
-import { AURORA_KEYS, SEND_FRAME } from "../timeline";
-import { beatScale } from "../audio";
+import { AURORA_KEYS } from "../timeline";
 import { C } from "./Theme";
 
 export const AuroraBackground: React.FC = () => {
     const frame = useCurrentFrame();
 
     const I = interpolate(frame, AURORA_KEYS.frames, AURORA_KEYS.values, C);
-    // Background deepens smoothly from pure black to abyssal navy (#010208 -> #02040c)
-    const bg = interpolateColors(frame, [510, 570], ["#000000", "#010208"]);
-    const rise = (1 - I) * 500; // Rising intensity at brand drop
+    const bg = interpolateColors(frame, [510, 570], ["#03050B", "#050811"]);
+    const rise = (1 - I) * 320;
 
-    // Flare when sending prompt (f750 global = SEND_FRAME)
-    const rel = frame - SEND_FRAME;
-    const flare = rel < 0 ? 0 : interpolate(rel, [0, 8], [1, 0], C);
-
-    // Subtle 120 BPM beat scale
-    const bScale = beatScale(frame, 0.018);
-
-    // Flowing liquid coordinates from GrainyGradient.tsx
-    const t = frame * 0.04;
-    const wave1X = Math.sin(t * 0.8) * 80;
-    const wave1Y = Math.cos(t * 0.6) * 45;
-    const wave2X = Math.cos(t * 0.7) * -70;
-    const wave2Y = Math.sin(t * 0.9) * -50;
-    const wave3X = Math.sin(t * 0.5 + 1.5) * 60;
+    const t = frame * 0.032;
+    const wave1X = Math.sin(t * 0.75) * 90;
+    const wave1Y = Math.cos(t * 0.55) * 50;
+    const wave2X = Math.cos(t * 0.65) * -80;
+    const wave2Y = Math.sin(t * 0.8) * -45;
+    const wave3X = Math.sin(t * 0.45 + 1.4) * 70;
 
     return (
-        <AbsoluteFill style={{ backgroundColor: bg, overflow: "hidden", transform: `scale(${bScale})` }}>
-            {/* Deep Abyssal Base Gradient */}
+        <AbsoluteFill style={{ backgroundColor: bg, overflow: "hidden" }}>
+            {/* Deep Abyssal Base */}
             <div
                 style={{
                     position: "absolute",
                     inset: 0,
                     background:
-                        "radial-gradient(ellipse 120% 100% at 50% 110%, #030a2e 0%, #010208 65%, #000000 100%)",
-                    opacity: Math.max(0.2, I),
+                        "radial-gradient(ellipse 130% 100% at 50% 105%, rgba(30, 58, 138, 0.28) 0%, #050811 65%, #020409 100%)",
+                    opacity: Math.max(0.35, I),
                 }}
             />
 
-            {/* Liquid Fold 1: Cobalt Deep (#0029c7 / #1461e0) — Bottom-Left to Center */}
+            {/* Organic Sphere 1: Deep Sapphire (#1E3A8A) */}
             <div
                 style={{
                     position: "absolute",
-                    left: "20%",
-                    bottom: -160 + rise,
-                    width: 1500,
-                    height: 850,
-                    marginLeft: -750,
+                    left: "24%",
+                    bottom: -140 + rise,
+                    width: 1400,
+                    height: 820,
+                    marginLeft: -700,
                     background:
-                        "radial-gradient(ellipse at 45% 65%, rgba(0,41,199,0.85) 0%, rgba(20,97,224,0.45) 42%, transparent 75%)",
-                    filter: "blur(75px)",
-                    transform: `translate(${wave1X}px, ${wave1Y}px) rotate(-12deg) scaleY(${1 + Math.sin(t * 0.9) * 0.1})`,
-                    mixBlendMode: "screen",
-                    opacity: I * 0.92,
+                        "radial-gradient(ellipse at 50% 55%, rgba(30, 58, 138, 0.62) 0%, rgba(67, 56, 202, 0.28) 48%, transparent 76%)",
+                    filter: "blur(70px)",
+                    transform: `translate(${wave1X}px, ${wave1Y}px) rotate(-8deg)`,
+                    opacity: Math.max(0.28, I * 0.75),
                 }}
             />
 
-            {/* Liquid Fold 2: Electric Aurora Cyan (#14d9f5 / #0073e0) — Top-Right Crest */}
+            {/* Organic Sphere 2: Indigo (#4338CA) */}
             <div
                 style={{
                     position: "absolute",
-                    right: "-10%",
-                    top: "10%",
-                    width: 1300,
-                    height: 850,
-                    background:
-                        "radial-gradient(ellipse at 55% 45%, rgba(20,217,245,0.7) 0%, rgba(0,115,224,0.35) 45%, transparent 75%)",
-                    filter: "blur(90px)",
-                    transform: `translate(${wave2X}px, ${wave2Y}px) scale(${0.95 + Math.sin(t * 0.7) * 0.08})`,
-                    mixBlendMode: "screen",
-                    opacity: I * 0.78,
-                }}
-            />
-
-            {/* Liquid Fold 3: Night Violet / Indigo (#6d28d9 / #9447fa) — Mid Floating Orb */}
-            <div
-                style={{
-                    position: "absolute",
-                    left: "55%",
-                    bottom: -100 + rise,
+                    right: "-8%",
+                    top: "12%",
                     width: 1200,
-                    height: 700,
-                    marginLeft: -600,
+                    height: 780,
                     background:
-                        "radial-gradient(ellipse at 50% 60%, rgba(148,71,250,0.7) 0%, rgba(109,40,217,0.3) 45%, transparent 72%)",
-                    filter: "blur(80px)",
-                    transform: `translate(${wave3X}px, ${Math.cos(t * 0.8) * 35}px) rotate(8deg)`,
-                    mixBlendMode: "screen",
-                    opacity: I * 0.82,
+                        "radial-gradient(ellipse at 50% 50%, rgba(67, 56, 202, 0.48) 0%, rgba(30, 58, 138, 0.22) 50%, transparent 75%)",
+                    filter: "blur(75px)",
+                    transform: `translate(${wave2X}px, ${wave2Y}px)`,
+                    opacity: Math.max(0.22, I * 0.65),
                 }}
             />
 
-            {/* Liquid Fold 4: Executive Crimson / Rose Accent (#ec4899 / #e11d48) — Bottom Edge Warmth */}
+            {/* Organic Sphere 3: Soft Violet & Silver (#6D28D9 / #F8FAFC) */}
             <div
                 style={{
                     position: "absolute",
-                    left: "50%",
-                    bottom: -220 + rise,
-                    width: 2200,
-                    height: 380,
-                    marginLeft: -1100,
+                    left: "56%",
+                    bottom: -120 + rise,
+                    width: 1100,
+                    height: 640,
+                    marginLeft: -550,
                     background:
-                        "radial-gradient(ellipse at 50% 70%, rgba(236,72,153,0.85) 0%, rgba(225,29,72,0.4) 40%, transparent 75%)",
-                    filter: "blur(55px)",
-                    transform: `translateX(${Math.sin(t * 0.6) * 50}px)`,
-                    mixBlendMode: "screen",
-                    opacity: I * 0.75,
+                        "radial-gradient(ellipse at 50% 55%, rgba(109, 40, 217, 0.42) 0%, rgba(248, 250, 252, 0.08) 45%, transparent 74%)",
+                    filter: "blur(68px)",
+                    transform: `translate(${wave3X}px, ${Math.cos(t * 0.7) * 32}px) rotate(6deg)`,
+                    opacity: Math.max(0.2, I * 0.68),
                 }}
             />
 
-            {/* Prompt send cyan shockwave flare */}
-            {flare > 0 && (
-                <div
-                    style={{
-                        position: "absolute",
-                        left: "50%",
-                        top: "50%",
-                        width: 1400,
-                        height: 1400,
-                        marginLeft: -700,
-                        marginTop: -700,
-                        background:
-                            "radial-gradient(circle, rgba(20,217,245,0.65) 0%, rgba(0,41,199,0.3) 40%, transparent 70%)",
-                        opacity: flare,
-                        transform: `scale(${0.7 + (1 - flare) * 0.8})`,
-                        mixBlendMode: "screen",
-                        pointerEvents: "none",
-                    }}
-                />
-            )}
-
-            {/* Subtle Grainy Overlay Texture (from GrainyGradient analog film grain) */}
+            {/* Subtle Matte Grain Overlay */}
             <div
                 style={{
                     position: "absolute",
                     inset: 0,
-                    opacity: 0.042,
+                    opacity: 0.032,
                     mixBlendMode: "overlay",
                     pointerEvents: "none",
                 }}

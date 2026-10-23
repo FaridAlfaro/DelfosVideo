@@ -1,7 +1,8 @@
-// src/components/PromptBar.tsx — barra de prompt presentacional (macro y dock)
+// src/components/Promptbar.tsx — Minimalist Prompt Bar with strict Flexbox layout (Zero Neon, Zero Overlap)
 import React from "react";
-import { FONT, gradBorder } from "./Theme";
-import { Icon, Isotipo } from "./Ui";
+import { FONT, lerp } from "./Theme";
+import { BinIsotipo } from "./BinBrand";
+import { Icon } from "./Ui";
 
 interface Props {
     width: number;
@@ -11,31 +12,44 @@ interface Props {
     typed: string;
     placeholder?: string;
     caret?: boolean;
-    /** desplazamiento del texto cuando desborda (px) */
     textShift?: number;
     showButtons?: boolean;
     sendScale?: number;
     sendBg?: string;
     sendArrow?: string;
     ringP?: number;
+    /** 0..1 progress (in 6 frames after click) where arrow morphs into isotipo.svg */
+    arrowMorphP?: number;
+    /** Rotation in degrees for the morphed isotipo inside the send button */
+    isotipoRotation?: number;
+    /** Opacity of the bar chrome (background, border, text, left isotipo, action pills) */
+    chromeOpacity?: number;
 }
 
-/** Posición X del centro del botón enviar respecto al centro de la barra */
-export const sendOffsetX = (width: number, height: number) => width / 2 - height * 0.22 - height * 0.25;
+/** Exact X offset of the send button center relative to the center of the PromptBar */
+export const sendOffsetX = (width: number, height: number) => {
+    const sendD = Math.round(Math.min(54, height * 0.54));
+    return width / 2 - 24 - sendD / 2;
+};
 
-const pillBtn = (h: number): React.CSSProperties => ({
-    height: h * 0.5,
-    borderRadius: h * 0.25,
-    border: "1.5px solid rgba(255,255,255,0.22)",
-    display: "flex",
-    alignItems: "center",
-    gap: h * 0.08,
-    padding: `0 ${h * 0.16}px`,
-    color: "#e5e7eb",
-    fontFamily: FONT,
-    fontSize: h * 0.2,
-    fontWeight: 500,
-});
+const pillBtnStyle = (h: number): React.CSSProperties => {
+    const btnH = Math.round(Math.min(44, h * 0.44));
+    return {
+        height: btnH,
+        borderRadius: 999,
+        backgroundColor: "rgba(255, 255, 255, 0.04)",
+        border: "1px solid rgba(255, 255, 255, 0.12)",
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "0 16px",
+        color: "#E2E8F0",
+        fontFamily: FONT,
+        fontSize: 15,
+        fontWeight: 500,
+        flexShrink: 0,
+    };
+};
 
 export const PromptBar: React.FC<Props> = ({
     width,
@@ -45,86 +59,204 @@ export const PromptBar: React.FC<Props> = ({
     typed,
     placeholder,
     caret = true,
-    textShift = 0,
     showButtons = false,
     sendScale = 1,
     sendBg = "#ffffff",
-    sendArrow = "#000000",
-    ringP = 0,
+    sendArrow = "#0B0F1A",
+    arrowMorphP = 0,
+    isotipoRotation = 0,
+    chromeOpacity = 1,
 }) => {
-    const sendD = h * 0.5;
+    const sendD = Math.round(Math.min(54, h * 0.54));
+    const arrowScale = Math.max(0, 1 - arrowMorphP);
+    const arrowOpacity = Math.max(0, 1 - arrowMorphP);
+
     return (
         <div
             style={{
                 width,
                 height: h,
                 boxSizing: "border-box",
-                borderRadius: h * 0.34,
-                padding: `0 ${h * 0.22}px`,
                 display: "flex",
                 alignItems: "center",
-                gap: h * 0.2,
-                boxShadow: "0 30px 80px rgba(0,0,0,0.7)",
-                ...gradBorder(frame, "rgba(26,26,30,0.97)", "rgba(255,255,255,0.35)", "rgba(244,114,182,0.7)", 1.5, 1.5),
+                justifyContent: "space-between",
+                padding: "0 24px 0 28px",
+                gap: "20px",
+                background: `rgba(18, 22, 34, ${0.85 * chromeOpacity})`,
+                backdropFilter: chromeOpacity > 0.05 ? "blur(24px)" : undefined,
+                border: `1px solid rgba(255, 255, 255, ${0.12 * chromeOpacity})`,
+                borderRadius: "999px",
             }}
         >
-            <Isotipo size={h * 0.42} />
+            {/* Contenedor del isotipo.svg izquierdo (32x32, flexShrink: 0, blanco puro #ffffff, cero neón) */}
+            <div
+                style={{
+                    width: 32,
+                    height: 32,
+                    flexShrink: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    opacity: chromeOpacity,
+                }}
+            >
+                <BinIsotipo size={32} color="#ffffff" />
+            </div>
+
+            {/* Contenedor del texto: sin máscara oscura ni solapamiento con la letra "W" */}
             <div
                 style={{
                     flex: 1,
-                    height: "100%",
                     overflow: "hidden",
+                    whiteSpace: "nowrap",
+                    paddingLeft: "4px",
                     display: "flex",
                     alignItems: "center",
-                    WebkitMaskImage: "linear-gradient(90deg, transparent 0, #000 40px)",
-                    maskImage: "linear-gradient(90deg, transparent 0, #000 40px)",
+                    opacity: chromeOpacity,
                 }}
             >
-                <span style={{ fontFamily: FONT, fontSize, color: typed ? "#f8fafc" : "#7c8294", whiteSpace: "nowrap", transform: `translateX(${-textShift}px)` }}>
+                <span
+                    style={{
+                        fontFamily: FONT,
+                        fontSize,
+                        fontWeight: 500,
+                        letterSpacing: "-0.015em",
+                        color: typed ? "#F8FAFC" : "#7C8294",
+                        whiteSpace: "nowrap",
+                    }}
+                >
                     {typed || placeholder}
-                    {caret && <span style={{ color: "#c4b5fd", opacity: frame % 12 < 7 ? 1 : 0 }}>|</span>}
+                    {caret && (
+                        <span
+                            style={{
+                                color: "#94A3B8",
+                                marginLeft: 3,
+                                opacity: frame % 14 < 7 ? 1 : 0,
+                            }}
+                        >
+                            |
+                        </span>
+                    )}
                 </span>
             </div>
-            {showButtons && (
-                <>
-                    <div style={pillBtn(h)}>
-                        <Icon name="bag" size={h * 0.2} color="#e5e7eb" />
-                        Attach
+
+            {/* Contenedor derecho (acciones + botón enviar) */}
+            <div
+                style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    flexShrink: 0,
+                }}
+            >
+                {showButtons && (
+                    <div
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                            opacity: chromeOpacity,
+                        }}
+                    >
+                        <div style={pillBtnStyle(h)}>
+                            <Icon name="bag" size={16} color="#CBD5E1" />
+                            <span>Attach</span>
+                        </div>
+                        <div style={pillBtnStyle(h)}>
+                            <Icon name="chat" size={16} color="#CBD5E1" />
+                            <span>Chat</span>
+                        </div>
+                        <div
+                            style={{
+                                ...pillBtnStyle(h),
+                                width: Math.round(Math.min(44, h * 0.44)),
+                                padding: 0,
+                                justifyContent: "center",
+                            }}
+                        >
+                            <svg width={18} height={18} viewBox="0 0 24 24" stroke="#CBD5E1" strokeWidth="2.2" strokeLinecap="round">
+                                {[4, 8, 12, 16, 20].map((x, i) => (
+                                    <line
+                                        key={x}
+                                        x1={x}
+                                        x2={x}
+                                        y1={12 - [3, 6, 9, 5, 3][i]}
+                                        y2={12 + [3, 6, 9, 5, 3][i]}
+                                    />
+                                ))}
+                            </svg>
+                        </div>
                     </div>
-                    <div style={pillBtn(h)}>
-                        <Icon name="chat" size={h * 0.2} color="#e5e7eb" />
-                        Chat
-                    </div>
-                    <div style={{ ...pillBtn(h), width: h * 0.5, padding: 0, justifyContent: "center", borderRadius: h * 0.25 }}>
-                        <svg width={h * 0.24} height={h * 0.24} viewBox="0 0 24 24" stroke="#e5e7eb" strokeWidth="2.4" strokeLinecap="round">
-                            {[3, 7, 11, 15, 19].map((x, i) => (
-                                <line key={x} x1={x + 0.5} x2={x + 0.5} y1={12 - [3, 7, 10, 6, 3][i]} y2={12 + [3, 7, 10, 6, 3][i]} />
-                            ))}
-                        </svg>
-                    </div>
-                </>
-            )}
-            <div style={{ position: "relative", width: sendD, height: sendD, flex: "none" }}>
-                {ringP > 0 && ringP < 1 && (
-                    <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "3px solid #a5b4fc", opacity: 0.85 * (1 - ringP), transform: `scale(${1 + ringP * 1.8})` }} />
                 )}
+
+                {/* Botón circular de enviar -> se transforma directamente en isotipo.svg al hacer clic */}
                 <div
                     style={{
+                        position: "relative",
                         width: sendD,
                         height: sendD,
-                        borderRadius: "50%",
-                        background: sendBg,
+                        flexShrink: 0,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        transform: `scale(${sendScale})`,
-                        boxShadow: ringP > 0 && ringP < 1 ? "0 0 40px rgba(129,140,248,0.9)" : "none",
                     }}
                 >
-                    <svg width={sendD * 0.46} height={sendD * 0.46} viewBox="0 0 24 24" fill="none" stroke={sendArrow} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="12" y1="19" x2="12" y2="5" />
-                        <polyline points="5 12 12 5 19 12" />
-                    </svg>
+                    {/* Fondo circular del botón enviar (se atenúa cuando nace el isotipo) */}
+                    <div
+                        style={{
+                            position: "absolute",
+                            inset: 0,
+                            borderRadius: "50%",
+                            background: sendBg,
+                            opacity: Math.max(0, 1 - arrowMorphP * 0.88) * chromeOpacity,
+                            border: arrowMorphP > 0 ? "1px solid rgba(255, 255, 255, 0.14)" : "none",
+                            transform: `scale(${sendScale})`,
+                        }}
+                    />
+
+                    {/* Icono de flecha hacia arriba (desaparece con scale: 0, opacity: 0 en 6 frames) */}
+                    {arrowOpacity > 0.01 && (
+                        <div
+                            style={{
+                                position: "relative",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                opacity: arrowOpacity,
+                                transform: `scale(${arrowScale * sendScale})`,
+                            }}
+                        >
+                            <svg
+                                width={sendD * 0.44}
+                                height={sendD * 0.44}
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke={sendArrow}
+                                strokeWidth="2.4"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <line x1="12" y1="19" x2="12" y2="5" />
+                                <polyline points="5 12 12 5 19 12" />
+                            </svg>
+                        </div>
+                    )}
+
+                    {/* Isotipo.svg nacido directamente en la coordenada del botón de enviar */}
+                    {arrowMorphP > 0.01 && (
+                        <div
+                            style={{
+                                position: "absolute",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                opacity: arrowMorphP,
+                                transform: `scale(${lerp(0.5, 1.15, arrowMorphP)})`,
+                            }}
+                        >
+                            <BinIsotipo size={34} color="#ffffff" rotation={isotipoRotation} />
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
