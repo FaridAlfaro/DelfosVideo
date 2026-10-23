@@ -10,9 +10,12 @@
   "private": true,
   "dependencies": {
     "@remotion/cli": "4.0.537",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.59.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "remotion": "4.0.537"
+    "remotion": "4.0.537",
+    "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
     "@remotion/eslint-config-flat": "4.0.537",
