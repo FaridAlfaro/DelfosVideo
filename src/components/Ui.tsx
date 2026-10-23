@@ -1,19 +1,17 @@
 // src/components/ui.tsx — Tile, Icon, Cursor, Isotipo, GradientWipe
 import React from "react";
-import { AbsoluteFill, Img, staticFile } from "remotion";
+import { AbsoluteFill } from "remotion";
+
 import { lerp } from "./Theme";
 
-export const Isotipo: React.FC<{ size?: number; style?: React.CSSProperties }> = ({ size = 64, style }) => (
-    <Img
-        src={staticFile("isotipo.svg")}
-        style={{
-            width: size,
-            height: size,
-            objectFit: "contain",
-            ...style,
-        }}
-    />
-);
+import { BinIsotipo } from "./BinBrand";
+
+export const Isotipo: React.FC<{ size?: number; color?: string; style?: React.CSSProperties }> = ({
+    size = 64,
+    color = "#ffffff",
+    style,
+}) => <BinIsotipo size={size} color={color} style={style} />;
+
 
 /** Teselas de vidrio oscuro con borde superior iluminado (como en el dock de "Connectors") */
 export const Tile: React.FC<{

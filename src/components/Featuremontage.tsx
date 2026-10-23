@@ -1,313 +1,574 @@
-// src/components/FeatureMontage.tsx (270 frames = 43–52 s, f1290–f1560 global)
-// 3 beats de 90f:
-// Beat A (0–90): Hero UI 0–46 -> morph 46–62 -> lockup "Interactive maps" en local 60 (f1350)
-// Beat B (90–180): Hero UI 0–46 -> morph 46–62 -> lockup "Data dashboards" en local 60 (f1440)
-// Beat C (180–270): Hero UI 0–46 -> morph 46–62 -> lockup "Predictive strategy" en local 60 (f1530)
+// src/components/Featuremontage.tsx (270 frames = 43–52 s, f1290–f1560 global)
+// 1) local 0–75 (f1290–f1365): Sección de Énfasis en Mapas Interactivos (inspirada en MAPA.mp4)
+//    - Split card con geo-signals en la izquierda y zoom interactivo multinivel (local -> regional -> global) en la derecha.
+// 2) local 75–270 (f1365–f1560): Feature Slider dinámico (inspirado en SLIDER.mp4)
+//    - Columna izquierda: Lista vertical de 4 items.
+//    - Isotipo.svg a la izquierda del item activo: ROTA mientras desciende suavemente al siguiente elemento.
+//    - Card derecha: Transforma dinámicamente sus contenidos (Live Sentiment -> BI Dashboards -> Predictive Strategy -> 24/7 Connectors).
 import React from "react";
-import { AbsoluteFill, Sequence, useCurrentFrame } from "remotion";
-import { BACK, FONT, GradientText, IO, OUT, SERIF, SNAP, ZoomBlurOut, gradBorder, lerp, ramp } from "./Theme";
-import { Icon, IconName } from "./Ui";
+import { AbsoluteFill, useCurrentFrame } from "remotion";
+import { FONT, OUT, ZoomBlurOut, lerp, ramp } from "./Theme";
+import { BinIsotipo } from "./BinBrand";
+import { Icon } from "./Ui";
 
-const HW = 980;
-const HH = 560;
+// ─────────────────────────────────────────────────────────────────────────────
+// 1. SECCIÓN DE ÉNFASIS EN MAPAS INTERACTIVOS (Inspirada en MAPA.mp4)
+// ─────────────────────────────────────────────────────────────────────────────
+export const MapEmphasis: React.FC<{ f: number }> = ({ f }) => {
+    // Zoom y cámara del mapa
+    const zoomPhase = ramp(f, 10, 60, OUT);
+    const mapScale = lerp(1, 1.45, zoomPhase);
+    const panX = lerp(0, -60, zoomPhase);
+    const panY = lerp(0, -35, zoomPhase);
 
-const heroCard: React.CSSProperties = {
-    width: HW,
-    height: HH,
-    boxSizing: "border-box",
-    padding: 32,
-    fontFamily: FONT,
-    color: "#fff",
-    position: "relative",
-};
-
-// ───────── Hero A · mapa de calor interactivo ─────────
-const HeatHero: React.FC<{ f: number }> = ({ f }) => {
-    const COLS = 18;
-    const ROWS = 8;
-    const ripples = [
-        { cx: 4, cy: 3, o: 0 },
-        { cx: 13, cy: 5, o: 5 },
-        { cx: 9, cy: 1.5, o: 2.5 },
-    ];
-    const pins = [
-        { n: "Buenos Aires", v: "+18%", x: 21, y: 66, d: 12 },
-        { n: "Madrid", v: "+24%", x: 56, y: 28, d: 20 },
-        { n: "Mexico City", v: "+31%", x: 78, y: 62, d: 28 },
-    ];
-    return (
-        <div style={heroCard}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: 40 }}>
-                <span style={{ fontSize: 28, fontWeight: 700 }}>Live Sentiment Map</span>
-                <span style={{ fontSize: 16, color: "#4ade80", fontWeight: 600 }}>● {Math.round(lerp(120000, 148900, ramp(f, 0, 46))).toLocaleString("en-US")} signals</span>
-            </div>
-            <div style={{ position: "absolute", left: 32, right: 32, top: 100, bottom: 32, display: "grid", gridTemplateColumns: `repeat(${COLS}, 1fr)`, gridTemplateRows: `repeat(${ROWS}, 1fr)`, placeItems: "center" }}>
-                {Array.from({ length: COLS * ROWS }).map((_, n) => {
-                    const i = n % COLS;
-                    const j = Math.floor(n / COLS);
-                    let w = 0;
-                    ripples.forEach((r) => {
-                        const rad = ((f * 0.34 + r.o) % 11) + 0.2;
-                        w = Math.max(w, Math.exp(-Math.pow(Math.hypot(i - r.cx, j - r.cy) - rad, 2) / 1.5));
-                    });
-                    const v = Math.min(1, w + 0.14 + 0.1 * Math.sin(f * 0.2 + i * 0.7 + j));
-                    const hot = i / COLS;
-                    const spawn = ramp(f - (i + j) * 0.6, 0, 5);
-                    return (
-                        <div
-                            key={n}
-                            style={{
-                                width: 20,
-                                height: 20,
-                                borderRadius: 10,
-                                backgroundColor: `rgba(${Math.round(lerp(99, 236, hot))},${Math.round(lerp(102, 72, hot))},${Math.round(lerp(241, 153, hot))},${0.25 + 0.75 * v})`,
-                                boxShadow: w > 0.5 ? `0 0 ${10 + 14 * w}px rgba(236,72,153,0.8)` : "none",
-                                transform: `scale(${(0.7 + 1.0 * v) * spawn})`,
-                            }}
-                        />
-                    );
-                })}
-                {pins.map((p) => {
-                    const pp = ramp(f, p.d, p.d + 10, BACK);
-                    return (
-                        <div key={p.n} style={{ position: "absolute", left: `${p.x}%`, top: `${p.y}%`, transform: `translate(-50%, -100%) translateY(${(1 - pp) * -40 + Math.sin(f * 0.2) * 3}px) scale(${pp})`, textAlign: "center" }}>
-                            <div style={{ padding: "7px 14px", borderRadius: 14, background: "#fff", color: "#0b0b10", fontSize: 17, fontWeight: 700, whiteSpace: "nowrap", boxShadow: "0 10px 30px rgba(0,0,0,0.5)" }}>
-                                {p.n} <span style={{ color: "#6366f1" }}>{p.v}</span>
-                            </div>
-                            <div style={{ width: 14, height: 14, margin: "6px auto 0", borderRadius: 7, background: "#ec4899", boxShadow: `0 0 ${12 + 10 * Math.abs(Math.sin(f * 0.2))}px #ec4899` }} />
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-};
-
-// ───────── Hero B · dashboard BI ─────────
-const BiHero: React.FC<{ f: number }> = ({ f }) => {
-    const stats = [
-        { l: "Mentions", v: 2.4, s: "M", d: 1 },
-        { l: "Positive", v: 84, s: "%" },
-        { l: "Reach", v: 18.2, s: "M", d: 1 },
-        { l: "Engagement", v: 9.7, s: "%", d: 1 },
-    ];
-    const bars = [40, 62, 48, 80, 66, 92, 74, 100, 84, 96];
-    const R = 62;
-    const CIRC = 2 * Math.PI * R;
-    const dp = ramp(f, 16, 44, OUT);
-    return (
-        <div style={heroCard}>
-            <div style={{ display: "flex", gap: 16 }}>
-                {stats.map((s, i) => {
-                    const p = ramp(f, 2 + i * 4, 24 + i * 4, OUT);
-                    return (
-                        <div key={s.l} style={{ flex: 1, padding: "16px 18px", borderRadius: 18, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", opacity: ramp(f, i * 3, i * 3 + 6), transform: `translateY(${(1 - ramp(f, i * 3, i * 3 + 8, OUT)) * 20}px)` }}>
-                            <div style={{ fontSize: 15, color: "#94a3b8" }}>{s.l}</div>
-                            <div style={{ fontSize: 40, fontWeight: 700, color: i === 1 ? "#22d3ee" : "#fff", fontVariantNumeric: "tabular-nums" }}>
-                                {s.d ? (s.v * p).toFixed(1) : Math.round(s.v * p)}
-                                {s.s}
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-            <div style={{ display: "flex", gap: 24, marginTop: 24, height: 330 }}>
-                <div style={{ flex: 1.7, borderRadius: 20, background: "rgba(255,255,255,0.04)", padding: 22, display: "flex", alignItems: "flex-end", gap: 14 }}>
-                    {bars.map((b, i) => {
-                        const p = ramp(f, 8 + i * 2, 26 + i * 2, BACK);
-                        const live = f > 34 ? Math.sin(f * 0.2 + i) * 4 : 0;
-                        return <div key={i} style={{ flex: 1, height: Math.max(0, (b / 100) * 270 * p + live), borderRadius: "8px 8px 3px 3px", background: i % 2 ? "linear-gradient(180deg,#f472b6,#ec4899)" : "linear-gradient(180deg,#818cf8,#4f46e5)" }} />;
-                    })}
-                </div>
-                <div style={{ flex: 1, borderRadius: 20, background: "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-                    <svg width="180" height="180" viewBox="0 0 180 180" style={{ transform: `rotate(${-90 + f * 2}deg)` }}>
-                        <defs>
-                            <linearGradient id="biDonut" x1="0" y1="0" x2="1" y2="1">
-                                <stop offset="0" stopColor="#06b6d4" />
-                                <stop offset="1" stopColor="#6366f1" />
-                            </linearGradient>
-                        </defs>
-                        <circle cx="90" cy="90" r={R} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="20" />
-                        <circle cx="90" cy="90" r={R} fill="none" stroke="url(#biDonut)" strokeWidth="20" strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={CIRC * (1 - 0.72 * dp)} />
-                    </svg>
-                    <div style={{ position: "absolute", fontSize: 34, fontWeight: 700 }}>{Math.round(72 * dp)}%</div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-// ───────── Hero C · predicción de tendencias ─────────
-const TrendHero: React.FC<{ f: number }> = ({ f }) => {
-    const hist = ramp(f, 4, 26, OUT);
-    const fc = ramp(f, 26, 42, OUT);
-    const pulse = (f * 0.25) % 1;
-    return (
-        <div style={heroCard}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                <span style={{ fontSize: 28, fontWeight: 700 }}>Predictive Strategy</span>
-                <span style={{ fontSize: 40, fontWeight: 700, color: "#38bdf8", fontVariantNumeric: "tabular-nums" }}>+{Math.round(38 * fc)}%</span>
-            </div>
-            <div style={{ fontSize: 16, color: "#94a3b8" }}>Projected brand momentum · next 90 days</div>
-            <svg width="916" height="400" viewBox="0 0 504 290" preserveAspectRatio="none" style={{ marginTop: 20 }}>
-                <defs>
-                    <linearGradient id="trH" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0" stopColor="#6366f1" />
-                        <stop offset="1" stopColor="#06b6d4" />
-                    </linearGradient>
-                    <linearGradient id="trF" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0" stopColor="#06b6d4" />
-                        <stop offset="1" stopColor="#ec4899" />
-                    </linearGradient>
-                </defs>
-                {[40, 100, 160, 220].map((y) => (
-                    <line key={y} x1="0" x2="504" y1={y} y2={y} stroke="rgba(255,255,255,0.06)" />
-                ))}
-                <polygon points="250,130 380,80 490,25 490,100 380,130 250,134" fill="rgba(236,72,153,0.18)" opacity={fc} />
-                <path d="M10 210 C 60 200, 90 170, 130 175 S 200 120, 250 130" pathLength={1} fill="none" stroke="url(#trH)" strokeWidth="4" strokeLinecap="round" strokeDasharray={1} strokeDashoffset={1 - hist} />
-                <path d="M250 130 C 300 140, 330 90, 380 80 C 430 70, 450 40, 490 25" pathLength={1} fill="none" stroke="url(#trF)" strokeWidth="4" strokeLinecap="round" strokeDasharray="0.04 0.03" strokeDashoffset={1 - fc} opacity={fc > 0 ? 1 : 0} />
-                {fc > 0.96 && (
-                    <>
-                        <circle cx="490" cy="25" r={6 + pulse * 18} fill="none" stroke="#ec4899" strokeOpacity={1 - pulse} strokeWidth="2" />
-                        <circle cx="490" cy="25" r="6" fill="#fff" />
-                    </>
-                )}
-            </svg>
-        </div>
-    );
-};
-
-// ───────── Elementos del lockup ─────────
-const Avatars: React.FC<{ f: number }> = ({ f }) => (
-    <div style={{ display: "flex" }}>
-        {[["#fb7185", "#f472b6", "M"], ["#60a5fa", "#6366f1", "L"], ["#34d399", "#06b6d4", "S"]].map(([a, b, l], i) => (
-            <div key={l} style={{ width: 62, height: 62, borderRadius: 31, marginLeft: i ? -16 : 0, background: `linear-gradient(135deg,${a},${b})`, border: "3px solid #0a0b12", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: FONT, fontWeight: 700, fontSize: 24, color: "#fff", transform: `translateY(${Math.sin(f * 0.2 + i) * 3}px)` }}>
-                {l}
-            </div>
-        ))}
-    </div>
-);
-
-const Chips: React.FC<{ f: number }> = ({ f }) => (
-    <div style={{ display: "flex", gap: 12 }}>
-        {[["Confidence 99.4%", "#4ade80"], ["Live", "#f472b6"]].map(([t, c]) => (
-            <span key={t} style={{ fontFamily: FONT, fontSize: 24, fontWeight: 700, color: c, padding: "6px 18px", borderRadius: 22, border: `1.5px solid ${c}66`, background: `${c}1f`, transform: `scale(${1 + Math.sin(f * 0.25) * 0.02})` }}>
-                {t}
-            </span>
-        ))}
-    </div>
-);
-
-interface BeatProps {
-    hero: (f: number) => React.ReactNode;
-    shape: "toggle" | "tile";
-    icon: IconName;
-    line1: string;
-    italic: string;
-    extra: (f: number) => React.ReactNode;
-    f: number;
-}
-
-const FONT_SIZE = 108;
-
-const Beat: React.FC<BeatProps> = ({ hero, shape, icon, line1, italic, extra, f }) => {
-    const tw = shape === "toggle" ? 190 : 132;
-    const th = shape === "toggle" ? 100 : 132;
-    const textW = line1.length * FONT_SIZE * 0.56;
-    const row = tw + 34 + textW;
-    const tileCX = 960 - row / 2 + tw / 2;
-    const tileCY = 470;
-    const textLeft = tileCX + tw / 2 + 34;
-
+    // Fade in general y salida suave
     const enter = ramp(f, 0, 10, OUT);
-    const morph = ramp(f, 46, 62, SNAP);
-    const move = ramp(f, 56, 72, IO);
-    const w = lerp(HW, tw, morph);
-    const h = lerp(HH, th, morph);
-    const radius = lerp(30, shape === "toggle" ? th / 2 : 34, morph);
-    const cx = lerp(960, tileCX, move);
-    const cy = lerp(540, tileCY, move);
-    const heroOpacity = 1 - ramp(f, 40, 52);
-    const tileIn = ramp(f, 54, 62);
-    const on = ramp(f, 62, 70, OUT);
-    const camScale = lerp(0.93, 1.05, ramp(f, 0, 46));
+    const exit = ramp(f, 66, 75, OUT);
+    const cardOpacity = enter * (1 - exit);
 
-    const word = (start: number, size = FONT_SIZE): React.CSSProperties => {
-        const p = ramp(f, start, start + 4);
-        return { opacity: p, filter: `blur(${(1 - p) * 14}px)`, transform: `scale(${lerp(0.88, 1, p)}) translateX(${(1 - p) * -18}px)`, fontSize: size };
-    };
+    // Datos geográficos que se revelan
+    const cities = [
+        { name: "Cupertino HQ", country: "United States", signals: "42.8k", active: true },
+        { name: "Madrid District", country: "Spain", signals: "31.4k", active: f > 22 },
+        { name: "Buenos Aires Hub", country: "Argentina", signals: "28.9k", active: f > 36 },
+    ];
 
     return (
-        <AbsoluteFill>
-            <AbsoluteFill style={{ transform: `scale(${camScale})`, opacity: enter }}>
+        <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity: cardOpacity }}>
+            {/* Contenedor Split Card como en MAPA.mp4 */}
+            <div
+                style={{
+                    width: 1460,
+                    height: 720,
+                    borderRadius: 24,
+                    overflow: "hidden",
+                    backgroundColor: "rgba(11, 14, 24, 0.95)",
+                    border: "1px solid rgba(255, 255, 255, 0.12)",
+                    boxShadow: "0 40px 100px rgba(0,0,0,0.85), 0 0 60px rgba(0,41,199,0.18)",
+                    display: "flex",
+                }}
+            >
+                {/* Panel Izquierdo: Info Geográfica & Tags */}
                 <div
                     style={{
-                        position: "absolute",
-                        left: cx - w / 2,
-                        top: cy - h / 2,
-                        width: w,
-                        height: h,
-                        borderRadius: radius,
-                        overflow: "hidden",
-                        backgroundColor: "rgba(12,15,26,0.95)",
-                        boxShadow: "0 40px 100px rgba(0,0,0,0.8), 0 0 90px rgba(99,102,241,0.22)",
-                        filter: `blur(${(1 - enter) * 10}px)`,
-                        ...gradBorder(f, "rgba(12,15,26,0.95)", "#6366f1", "#ec4899", 1.5, 3),
+                        width: 480,
+                        padding: "48px 42px",
+                        boxSizing: "border-box",
+                        borderRight: "1px solid rgba(255, 255, 255, 0.08)",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        backgroundColor: "#030a2e",
                     }}
                 >
-                    <div style={{ position: "absolute", left: "50%", top: "50%", width: HW, height: HH, marginLeft: -HW / 2, marginTop: -HH / 2, opacity: heroOpacity }}>{hero(f)}</div>
-
-                    {shape === "toggle" ? (
-                        <div style={{ position: "absolute", inset: 0, opacity: tileIn }}>
-                            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg,#fb7185,#818cf8)", opacity: on }} />
-                            <div style={{ position: "absolute", top: 10, left: 10 + on * (tw - th), width: th - 20, height: th - 20, borderRadius: "50%", background: "radial-gradient(circle at 35% 30%, #fff, #c7d2fe)", boxShadow: "0 6px 18px rgba(0,0,0,0.5)" }} />
+                    <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+                            <span
+                                style={{
+                                    fontFamily: FONT,
+                                    fontSize: 13,
+                                    fontWeight: 700,
+                                    textTransform: "uppercase",
+                                    letterSpacing: "0.14em",
+                                    color: "#14d9f5",
+                                    padding: "4px 10px",
+                                    borderRadius: 6,
+                                    backgroundColor: "rgba(20,217,245,0.12)",
+                                    border: "1px solid rgba(20,217,245,0.25)",
+                                }}
+                            >
+                                Street & District
+                            </span>
                         </div>
-                    ) : (
-                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", opacity: tileIn, transform: `scale(${lerp(0.6, 1, ramp(f, 54, 66, BACK))}) rotate(${Math.sin(f * 0.15) * 4}deg)` }}>
-                            <Icon name={icon} size={64} color="#c7d2fe" sw={2.2} />
-                        </div>
-                    )}
-                </div>
-            </AbsoluteFill>
+                        <h3
+                            style={{
+                                fontFamily: FONT,
+                                fontSize: 36,
+                                fontWeight: 700,
+                                color: "#ffffff",
+                                margin: "0 0 12px 0",
+                                lineHeight: 1.15,
+                                letterSpacing: "-0.03em",
+                            }}
+                        >
+                            One Apple Park Way,
+                            <br />
+                            <span style={{ color: "#93c5fd" }}>Cupertino, CA, 95014</span>
+                        </h3>
+                        <p style={{ fontFamily: FONT, fontSize: 16, color: "#8b949e", margin: 0 }}>
+                            Real-time geographic sentiment intelligence
+                        </p>
+                    </div>
 
-            {/* Lockup de texto: empieza a construirse en f60–62 */}
-            <div style={{ position: "absolute", left: textLeft, top: 540 - 110, fontFamily: FONT, fontWeight: 700, color: "#fff", letterSpacing: "-0.04em", lineHeight: 1 }}>
-                <div style={{ height: 120, display: "flex", alignItems: "center", ...word(60) }}>{line1}</div>
-                <div style={{ height: 120, display: "flex", alignItems: "center", gap: 28, ...word(66, FONT_SIZE) }}>
-                    <GradientText colors={["#fb7185", "#a78bfa", "#60a5fa"]} style={{ fontFamily: SERIF, fontStyle: "italic", fontWeight: 500, fontSize: FONT_SIZE + 8 }}>
-                        {italic}
-                    </GradientText>
-                    <span style={{ ...word(72, 60), fontSize: 60, color: "#fff", opacity: ramp(f, 72, 76) }}>{shape === "toggle" ? "←" : ""}</span>
+                    {/* Lista de ubicaciones monitoreadas */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                        {cities.map((c, i) => {
+                            const p = ramp(f, 8 + i * 12, 18 + i * 12, OUT);
+                            return (
+                                <div
+                                    key={c.name}
+                                    style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        padding: "12px 16px",
+                                        borderRadius: 14,
+                                        backgroundColor: "rgba(255,255,255,0.04)",
+                                        border: "1px solid rgba(255,255,255,0.06)",
+                                        opacity: p,
+                                        transform: `translateX(${(1 - p) * -16}px)`,
+                                    }}
+                                >
+                                    <div>
+                                        <div style={{ fontFamily: FONT, fontSize: 16, fontWeight: 600, color: "#ffffff" }}>
+                                            {c.name}
+                                        </div>
+                                        <div style={{ fontFamily: FONT, fontSize: 13, color: "#8b949e" }}>{c.country}</div>
+                                    </div>
+                                    <div style={{ fontFamily: FONT, fontSize: 15, fontWeight: 700, color: "#14d9f5" }}>
+                                        {c.signals}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Footer live status */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+                        <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#4ade80", boxShadow: "0 0 8px #4ade80" }} />
+                        <span style={{ fontFamily: FONT, fontSize: 14, color: "#cbd5e1", fontWeight: 600 }}>
+                            148,900 live geo signals indexed
+                        </span>
+                    </div>
                 </div>
-                <div style={{ marginTop: 6, opacity: ramp(f, 74, 80), transform: `translateY(${(1 - ramp(f, 74, 82, OUT)) * 14}px)` }}>{extra(f)}</div>
+
+                {/* Panel Derecho: Mapa Dinámico Multi-escala */}
+                <div style={{ flex: 1, position: "relative", overflow: "hidden", backgroundColor: "#020512" }}>
+                    {/* SVG Mapa estilizado arquitectónico */}
+                    <svg
+                        width="100%"
+                        height="100%"
+                        viewBox="0 0 980 720"
+                        style={{
+                            transform: `translate(${panX}px, ${panY}px) scale(${mapScale})`,
+                            transformOrigin: "45% 50%",
+                        }}
+                    >
+                        <defs>
+                            <radialGradient id="mapGlow" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stopColor="rgba(0,41,199,0.35)" />
+                                <stop offset="100%" stopColor="transparent" />
+                            </radialGradient>
+                            <pattern id="gridPattern" width="40" height="40" patternUnits="userSpaceOnUse">
+                                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+                            </pattern>
+                        </defs>
+
+                        {/* Cuadrícula cartográfica de fondo */}
+                        <rect width="980" height="720" fill="url(#gridPattern)" />
+                        <circle cx="490" cy="360" r="320" fill="url(#mapGlow)" />
+
+                        {/* Calles y contornos geométricos vectoriales */}
+                        <path
+                            d="M 120 180 Q 300 240 490 220 T 860 300 M 180 540 Q 420 460 740 520 M 340 80 L 390 640 M 640 100 L 590 620"
+                            stroke="rgba(255,255,255,0.12)"
+                            strokeWidth="3"
+                            fill="none"
+                        />
+                        <path
+                            d="M 220 320 Q 380 300 520 340 T 820 410 M 400 160 Q 560 210 680 180"
+                            stroke="rgba(20,217,245,0.22)"
+                            strokeWidth="2"
+                            fill="none"
+                        />
+
+                        {/* Campus circular concéntrico (como en Apple Park de MAPA.mp4) */}
+                        <circle cx="460" cy="350" r="140" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="8" />
+                        <circle cx="460" cy="350" r="110" fill="none" stroke="rgba(20,217,245,0.3)" strokeWidth="4" />
+                        <circle cx="460" cy="350" r="80" fill="none" stroke="rgba(0,41,199,0.4)" strokeWidth="2" />
+
+                        {/* Cluster Geográfico Principal */}
+                        <circle cx="460" cy="350" r="14" fill="#ffffff" />
+                        <circle cx="460" cy="350" r={24 + Math.sin(f * 0.2) * 6} fill="none" stroke="#14d9f5" strokeWidth="2" />
+
+                        {/* Pines secundarios que se revelan con el zoom */}
+                        {zoomPhase > 0.25 && (
+                            <>
+                                <g transform="translate(680, 260)">
+                                    <circle cx="0" cy="0" r="8" fill="#93c5fd" />
+                                    <circle cx="0" cy="0" r="18" fill="none" stroke="rgba(147,197,253,0.4)" strokeWidth="1.5" />
+                                    <text x="14" y="5" fill="#e2e8f0" fontFamily={FONT} fontSize="14" fontWeight="600">
+                                        Madrid Cluster · +31.4k
+                                    </text>
+                                </g>
+                                <g transform="translate(260, 480)">
+                                    <circle cx="0" cy="0" r="8" fill="#93c5fd" />
+                                    <circle cx="0" cy="0" r="18" fill="none" stroke="rgba(147,197,253,0.4)" strokeWidth="1.5" />
+                                    <text x="14" y="5" fill="#e2e8f0" fontFamily={FONT} fontSize="14" fontWeight="600">
+                                        Buenos Aires · +28.9k
+                                    </text>
+                                </g>
+                            </>
+                        )}
+                    </svg>
+
+                    {/* Badge interactivo superior derecho */}
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: 24,
+                            right: 24,
+                            padding: "8px 16px",
+                            borderRadius: 20,
+                            backgroundColor: "rgba(11,14,24,0.85)",
+                            border: "1px solid rgba(255,255,255,0.12)",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            fontFamily: FONT,
+                            fontSize: 14,
+                            color: "#ffffff",
+                            fontWeight: 600,
+                        }}
+                    >
+                        <Icon name="pin" size={16} color="#14d9f5" />
+                        <span>Interactive Map Intelligence</span>
+                    </div>
+                </div>
             </div>
         </AbsoluteFill>
     );
 };
 
-// Cada beat vive en su propio <Sequence>: el frame local lo aporta este wrapper
-const BeatSeq: React.FC<Omit<BeatProps, "f">> = (props) => {
-    const f = useCurrentFrame();
+// ─────────────────────────────────────────────────────────────────────────────
+// 2. FEATURE SLIDER DINÁMICO (Inspirado en SLIDER.mp4)
+// ─────────────────────────────────────────────────────────────────────────────
+const SLIDER_ITEMS = [
+    { id: 0, label: "Live Sentiment", sub: "Multi-channel signal stream" },
+    { id: 1, label: "Data Dashboards", sub: "Executive BI metrics" },
+    { id: 2, label: "Predictive Strategy", sub: "90-day trajectory models" },
+    { id: 3, label: "24/7 Intelligence", sub: "Autonomous stack pipelines" },
+];
+
+export const FeatureSlider: React.FC<{ f: number }> = ({ f }) => {
+    // 4 pasos distribuidos en los 195 frames (frames 0 a 195 locales)
+    // Paso 0: 0..48
+    // Paso 1: 48..96
+    // Paso 2: 96..144
+    // Paso 3: 144..195
+    const stepDuration = 48;
+    const rawStep = f / stepDuration;
+    const currentStep = Math.min(3, Math.floor(rawStep));
+    const stepProgress = Math.min(1, Math.max(0, (f % stepDuration) / stepDuration));
+
+    // Desplazamiento vertical del Isotipo:
+    // Distancia entre items en la lista: cada item mide ~88px de alto con gap
+    const ITEM_HEIGHT = 88;
+    const currentY = currentStep * ITEM_HEIGHT + (currentStep < 3 ? ramp(stepProgress, 0.72, 1.0, OUT) * ITEM_HEIGHT : 0);
+
+    // Rotación del Isotipo mientras desciende (requisito explícito del prompt)
+    // Rota continuamente en cada salto de escalón
+    const rotation = f * 3.2;
+
     return (
-        <ZoomBlurOut frames={4}>
-            <Beat {...props} f={f} />
-        </ZoomBlurOut>
+        <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
+            <div
+                style={{
+                    width: 1460,
+                    height: 720,
+                    display: "flex",
+                    gap: 60,
+                    alignItems: "center",
+                }}
+            >
+                {/* ── Columna Izquierda: Lista con Isotipo Rotatorio Descendente ── */}
+                <div style={{ width: 440, display: "flex", flexDirection: "column", position: "relative" }}>
+                    {/* Indicador Isotipo que rota mientras desciende */}
+                    <div
+                        style={{
+                            position: "absolute",
+                            left: 0,
+                            top: 24,
+                            transform: `translateY(${currentY}px)`,
+                            zIndex: 10,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 44,
+                            height: 44,
+                        }}
+                    >
+                        <BinIsotipo size={38} color="#ffffff" rotation={rotation} />
+                    </div>
+
+                    {/* Lista de Items */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 0, paddingLeft: 64 }}>
+                        {SLIDER_ITEMS.map((item, idx) => {
+                            const isActive = currentStep === idx;
+                            const isTransitioning = currentStep === idx && stepProgress > 0.75;
+                            const activeWeight = isActive && !isTransitioning ? 1 : 0.35;
+
+                            return (
+                                <div
+                                    key={item.id}
+                                    style={{
+                                        height: ITEM_HEIGHT,
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        justifyContent: "center",
+                                        opacity: activeWeight,
+                                        transform: `translateX(${isActive ? 8 : 0}px)`,
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            fontFamily: FONT,
+                                            fontSize: 38,
+                                            fontWeight: isActive ? 700 : 500,
+                                            color: "#ffffff",
+                                            letterSpacing: "-0.03em",
+                                            lineHeight: 1.15,
+                                        }}
+                                    >
+                                        {item.label}
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontFamily: FONT,
+                                            fontSize: 16,
+                                            color: isActive ? "#93c5fd" : "#64748b",
+                                            fontWeight: 500,
+                                            marginTop: 4,
+                                        }}
+                                    >
+                                        {item.sub}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* ── Columna Derecha: Dynamic Card que cambia con cada item ── */}
+                <div style={{ flex: 1, height: 600, position: "relative" }}>
+                    {/* Card 1: Live Sentiment */}
+                    <SliderCard active={currentStep === 0}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 28 }}>
+                            <span style={{ fontFamily: FONT, fontSize: 24, fontWeight: 700, color: "#fff" }}>
+                                Live Signals Stream
+                            </span>
+                            <span style={{ fontFamily: FONT, fontSize: 14, color: "#4ade80", fontWeight: 600 }}>
+                                ● Synchronized (14 channels)
+                            </span>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                            {[
+                                { text: "Campaign reach drove +42.8% positive sentiment surge", time: "Just now", badge: "+42.8%" },
+                                { text: "Competitive benchmark outpaces key industry peers", time: "2m ago", badge: "84% Net" },
+                                { text: "Market adoption indexed across enterprise customer accounts", time: "4m ago", badge: "Verified" },
+                            ].map((msg, i) => (
+                                <div
+                                    key={i}
+                                    style={{
+                                        padding: "18px 22px",
+                                        borderRadius: 18,
+                                        backgroundColor: "rgba(255,255,255,0.05)",
+                                        border: "1px solid rgba(255,255,255,0.08)",
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <div>
+                                        <div style={{ fontFamily: FONT, fontSize: 18, color: "#f8fafc", fontWeight: 500 }}>
+                                            {msg.text}
+                                        </div>
+                                        <div style={{ fontFamily: FONT, fontSize: 13, color: "#64748b", marginTop: 4 }}>
+                                            {msg.time}
+                                        </div>
+                                    </div>
+                                    <div
+                                        style={{
+                                            fontFamily: FONT,
+                                            fontSize: 14,
+                                            fontWeight: 700,
+                                            color: "#14d9f5",
+                                            backgroundColor: "rgba(20,217,245,0.12)",
+                                            padding: "6px 14px",
+                                            borderRadius: 10,
+                                        }}
+                                    >
+                                        {msg.badge}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </SliderCard>
+
+                    {/* Card 2: Data Dashboards */}
+                    <SliderCard active={currentStep === 1}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+                            <span style={{ fontFamily: FONT, fontSize: 24, fontWeight: 700, color: "#fff" }}>
+                                Executive BI Metrics
+                            </span>
+                            <span style={{ fontFamily: FONT, fontSize: 14, color: "#93c5fd", fontWeight: 600 }}>
+                                Real-time synthesis
+                            </span>
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 20 }}>
+                            <div style={{ padding: 20, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                                <div style={{ fontFamily: FONT, fontSize: 15, color: "#8b949e" }}>Net Positive</div>
+                                <div style={{ fontFamily: FONT, fontSize: 44, fontWeight: 700, color: "#ffffff", marginTop: 6 }}>
+                                    84%
+                                </div>
+                            </div>
+                            <div style={{ padding: 20, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                                <div style={{ fontFamily: FONT, fontSize: 15, color: "#8b949e" }}>Signals Analyzed</div>
+                                <div style={{ fontFamily: FONT, fontSize: 44, fontWeight: 700, color: "#ffffff", marginTop: 6 }}>
+                                    2.4M
+                                </div>
+                            </div>
+                        </div>
+                        <div style={{ height: 160, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.04)", padding: 20, display: "flex", alignItems: "flex-end", gap: 12 }}>
+                            {[45, 60, 52, 75, 68, 88, 80, 96, 92, 100].map((v, i) => (
+                                <div key={i} style={{ flex: 1, height: `${v}%`, borderRadius: "6px 6px 2px 2px", backgroundColor: i === 9 ? "#14d9f5" : "#0029c7" }} />
+                            ))}
+                        </div>
+                    </SliderCard>
+
+                    {/* Card 3: Predictive Strategy */}
+                    <SliderCard active={currentStep === 2}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                            <div>
+                                <span style={{ fontFamily: FONT, fontSize: 24, fontWeight: 700, color: "#fff" }}>
+                                    90-Day Predictive Strategy
+                                </span>
+                                <div style={{ fontFamily: FONT, fontSize: 14, color: "#8b949e", marginTop: 4 }}>
+                                    Market adoption trajectory model
+                                </div>
+                            </div>
+                            <div style={{ fontFamily: FONT, fontSize: 32, fontWeight: 700, color: "#ffffff" }}>
+                                +38%
+                            </div>
+                        </div>
+                        <svg width="100%" height="240" viewBox="0 0 680 240" style={{ overflow: "visible" }}>
+                            <defs>
+                                <linearGradient id="predGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="rgba(0,41,199,0.4)" />
+                                    <stop offset="100%" stopColor="transparent" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M 0 190 Q 180 170 340 120 T 680 40 L 680 240 L 0 240 Z" fill="url(#predGrad)" />
+                            <path d="M 0 190 Q 180 170 340 120 T 680 40" fill="none" stroke="#ffffff" strokeWidth="4" />
+                            <circle cx="680" cy="40" r="8" fill="#14d9f5" />
+                            <circle cx="680" cy="40" r="18" fill="none" stroke="rgba(20,217,245,0.4)" strokeWidth="2" />
+                        </svg>
+                        <div style={{ display: "flex", gap: 14, marginTop: 12 }}>
+                            <span style={{ padding: "6px 14px", borderRadius: 10, backgroundColor: "rgba(255,255,255,0.06)", fontFamily: FONT, fontSize: 13, color: "#cbd5e1" }}>
+                                Confidence: 99.4%
+                            </span>
+                            <span style={{ padding: "6px 14px", borderRadius: 10, backgroundColor: "rgba(255,255,255,0.06)", fontFamily: FONT, fontSize: 13, color: "#cbd5e1" }}>
+                                Industry Delta: +51.5%
+                            </span>
+                        </div>
+                    </SliderCard>
+
+                    {/* Card 4: 24/7 Connectors */}
+                    <SliderCard active={currentStep === 3}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+                            <span style={{ fontFamily: FONT, fontSize: 24, fontWeight: 700, color: "#fff" }}>
+                                Autonomous Data Stack
+                            </span>
+                            <span style={{ fontFamily: FONT, fontSize: 14, color: "#4ade80", fontWeight: 600 }}>
+                                ● Continuous Ingestion
+                            </span>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                            {[
+                                { time: "11:00 AM", service: "Snowflake Warehouse", action: "1.2M records synced" },
+                                { time: "08:00 AM", service: "OpenAI Agents", action: "Multi-prompt reasoning pass" },
+                                { time: "06:00 AM", service: "Real-time Customer APIs", action: "148k live signals ingested" },
+                                { time: "02:00 AM", service: "Executive Report Generator", action: "Weekly synthesis compiled" },
+                            ].map((row, i) => (
+                                <div
+                                    key={i}
+                                    style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        padding: "16px 20px",
+                                        borderRadius: 16,
+                                        backgroundColor: "rgba(255,255,255,0.04)",
+                                        border: "1px solid rgba(255,255,255,0.07)",
+                                    }}
+                                >
+                                    <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                                        <span style={{ fontFamily: FONT, fontSize: 13, color: "#64748b", width: 72 }}>
+                                            {row.time}
+                                        </span>
+                                        <span style={{ fontFamily: FONT, fontSize: 16, fontWeight: 600, color: "#ffffff" }}>
+                                            {row.service}
+                                        </span>
+                                    </div>
+                                    <span style={{ fontFamily: FONT, fontSize: 14, color: "#93c5fd" }}>
+                                        {row.action}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </SliderCard>
+                </div>
+            </div>
+        </AbsoluteFill>
     );
 };
 
-export const FeatureMontage: React.FC = () => (
-    <AbsoluteFill>
-        {/* Beat A: local 0–90 -> Lockup maps en local 60 (f1350) */}
-        <Sequence durationInFrames={90}>
-            <BeatSeq hero={(f) => <HeatHero f={f} />} shape="toggle" icon="pin" line1="Interactive" italic="maps" extra={() => null} />
-        </Sequence>
-        {/* Beat B: local 90–180 -> Lockup dashboards en local 60 (f1440) */}
-        <Sequence from={90} durationInFrames={90}>
-            <BeatSeq hero={(f) => <BiHero f={f} />} shape="tile" icon="bars" line1="Data" italic="dashboards" extra={(f) => <Avatars f={f} />} />
-        </Sequence>
-        {/* Beat C: local 180–270 -> Lockup strategy en local 60 (f1530) */}
-        <Sequence from={180} durationInFrames={90}>
-            <BeatSeq hero={(f) => <TrendHero f={f} />} shape="tile" icon="target" line1="Predictive" italic="strategy" extra={(f) => <Chips f={f} />} />
-        </Sequence>
-    </AbsoluteFill>
-);
+const SliderCard: React.FC<{ active: boolean; children: React.ReactNode }> = ({ active, children }) => {
+    return (
+        <div
+            style={{
+                position: "absolute",
+                inset: 0,
+                borderRadius: 24,
+                backgroundColor: "rgba(11, 14, 24, 0.95)",
+                border: "1px solid rgba(255, 255, 255, 0.12)",
+                boxShadow: "0 30px 80px rgba(0,0,0,0.7), 0 0 50px rgba(0,41,199,0.14)",
+                padding: "36px 40px",
+                boxSizing: "border-box",
+                opacity: active ? 1 : 0,
+                transform: `translateY(${active ? 0 : 20}px) scale(${active ? 1 : 0.96})`,
+                pointerEvents: active ? "auto" : "none",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+            }}
+        >
+            {children}
+        </div>
+    );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COMPOSICIÓN DEL ACTO 5: MAP EMPHASIS (0–75) + FEATURE SLIDER (75–270)
+// ─────────────────────────────────────────────────────────────────────────────
+export const FeatureMontage: React.FC = () => {
+    const f = useCurrentFrame();
+
+    return (
+        <AbsoluteFill>
+            {/* 1. Énfasis breve en Mapas Interactivos (local 0–75) */}
+            {f < 75 && (
+                <ZoomBlurOut frames={4}>
+                    <MapEmphasis f={f} />
+                </ZoomBlurOut>
+            )}
+
+            {/* 2. Feature Slider con Isotipo Rotatorio y Descendente (local 75–270) */}
+            {f >= 75 && (
+                <ZoomBlurOut frames={4}>
+                    <FeatureSlider f={f - 75} />
+                </ZoomBlurOut>
+            )}
+        </AbsoluteFill>
+    );
+};

@@ -1,0 +1,8 @@
+{
+  "name": "BIN Video Commercial",
+  "description": "Remotion video commercial with dynamic animations, GrainyGradient aesthetics, and brand intelligence showcase for BIN.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

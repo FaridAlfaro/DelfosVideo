@@ -1,7 +1,6 @@
-// src/voiceover.ts — Sincronía y estructura de VoiceOver (31 líneas L01–L31)
+// src/VoiceOver.tsx — Sincronía y estructura de VoiceOver para BIN (sin reacciones de clientes)
 import React from "react";
-import { Audio, staticFile } from "remotion";
-import { Sequence } from "remotion";
+import { Audio, Sequence, staticFile } from "remotion";
 
 export interface VoiceLine {
     id: string;
@@ -24,11 +23,10 @@ export const VOICEOVER_SCRIPT: VoiceLine[] = [
     { id: "L09", startFrame: 414, maxFrames: 42, text: "Who they FOLLOW.", textEs: "A quién SIGUEN." },
     { id: "L10", startFrame: 462, maxFrames: 48, text: "All of it... lost in the NOISE.", textEs: "Todo eso... perdido en el RUIDO." },
     { id: "L11", startFrame: 510, maxFrames: 39, text: "Until TODAY.", textEs: "Hasta HOY." },
-    { id: "L12", startFrame: 576, maxFrames: 54, text: "This is Delfos Intelligence.", textEs: "Este es Delfos Intelligence." },
+    { id: "L12", startFrame: 576, maxFrames: 54, text: "This is BIN.", textEs: "Este es BIN." },
     { id: "L13", startFrame: 636, maxFrames: 51, text: "Just... ASK.", textEs: "Solo... PREGUNTA." },
-    { id: "L14", startFrame: 747, maxFrames: 63, text: "Delfos answers. In REAL TIME.", textEs: "Delfos responde. En TIEMPO REAL." },
-    { id: "L15", startFrame: 822, maxFrames: 75, text: "EIGHTY-FOUR percent... positive.", textEs: "OCHENTA Y CUATRO por ciento... positivo." },
-    { id: "L16", startFrame: 909, maxFrames: 81, text: "The launch video drove the SURGE. Pricing is the ONLY worry.", textEs: "El video de lanzamiento impulsó el PICO. El precio es la ÚNICA preocupación." },
+    { id: "L14", startFrame: 747, maxFrames: 63, text: "BIN answers. In REAL TIME.", textEs: "BIN responde. En TIEMPO REAL." },
+    // L15 y L16 eliminados: en ningún momento se hacen reacciones del cliente al dashboard
     { id: "L17", startFrame: 996, maxFrames: 48, text: "Then keep going. ASK anything.", textEs: "Y sigue. Pregunta LO QUE QUIERAS." },
     { id: "L18", startFrame: 1050, maxFrames: 54, text: "Want to see how you STACK UP?", textEs: "¿Quieres ver cómo te COMPARAS?" },
     { id: "L19", startFrame: 1122, maxFrames: 78, text: "Brand equity. Share of voice.", textEs: "Valor de marca. Cuota de voz." },
@@ -39,11 +37,11 @@ export const VOICEOVER_SCRIPT: VoiceLine[] = [
     { id: "L24", startFrame: 1440, maxFrames: 30, text: "Data DASHBOARDS.", textEs: "Paneles de DATOS." },
     { id: "L25", startFrame: 1476, maxFrames: 48, text: "Know what's NEXT.", textEs: "Sabe lo que VIENE." },
     { id: "L26", startFrame: 1530, maxFrames: 30, text: "Predictive STRATEGY.", textEs: "Estrategia PREDICTIVA." },
-    { id: "L27", startFrame: 1566, maxFrames: 54, text: "Connect your ENTIRE stack.", textEs: "Conecta TODO tu stack." },
-    { id: "L28", startFrame: 1620, maxFrames: 54, text: "Real-time. // Warehouse. // AI agents.", textEs: "Tiempo real. // Almacén de datos. // Agentes de IA." },
-    { id: "L29", startFrame: 1677, maxFrames: 51, text: "Everything. In ONE place.", textEs: "Todo. En UN solo lugar." },
-    { id: "L30", startFrame: 1734, maxFrames: 24, text: "Delfos Intelligence.", textEs: "Delfos Intelligence." },
-    { id: "L31", startFrame: 1761, maxFrames: 36, text: "Decide... BETTER.", textEs: "Decide... MEJOR." },
+    { id: "L27", startFrame: 1566, maxFrames: 42, text: "Connect your ENTIRE stack.", textEs: "Conecta TODO tu stack." },
+    { id: "L28", startFrame: 1608, maxFrames: 96, text: "Real-time. // Warehouse. // AI agents.", textEs: "Tiempo real. // Almacén de datos. // Agentes de IA." },
+    { id: "L29", startFrame: 1704, maxFrames: 30, text: "Everything. In ONE place.", textEs: "Todo. En UN solo lugar." },
+    { id: "L30", startFrame: 1734, maxFrames: 34, text: "BIN.", textEs: "BIN." },
+    { id: "L31", startFrame: 1768, maxFrames: 32, text: "Decide... BETTER.", textEs: "Decide... MEJOR." },
 ];
 
 /** Determina si un frame dado tiene locución activa */
@@ -63,7 +61,6 @@ export const VoiceOver: React.FC = () => {
                     durationInFrames={v.maxFrames}
                     name={`VO · ${v.id}`}
                 >
-                    {/* Monta el clip Lxx.mp3 con onError graceful por si no está colocado en public/vo */}
                     <Audio
                         src={staticFile(`vo/${v.id}.mp3`)}
                         onError={() => {

@@ -10,8 +10,12 @@ import { AbsoluteFill, Easing, Sequence, interpolate, useCurrentFrame } from "re
 import { KineticText } from "./KineticText";
 import { PromptBar, sendOffsetX } from "./Promptbar";
 import { ThinkingBlob } from "./Thinkingblob";
-import { C, FONT, IN, IO, OUT, SNAP, lerp, ramp } from "./Theme";
-import { Cursor, Isotipo } from "./Ui";
+import { C, IN, IO, OUT, SNAP, lerp, ramp } from "./Theme";
+import { Cursor } from "./Ui";
+
+import { BinLogoWallReveal } from "./BinBrand";
+
+
 
 const PROMPT = "What do people think about the new brand launch?";
 const T_LOGO = 60; // f570 global (drop musical)
@@ -34,11 +38,6 @@ export const BrandToPrompt: React.FC = () => {
     const shockwaveScale = lerp(0.2, 4.5, shockwaveP);
     const shockwaveOpacity = (1 - shockwaveP) * 0.9;
 
-    // ── Logo lockup (60–118) ──
-    const logoIn = ramp(f, T_LOGO, T_LOGO + 12, OUT);
-    const logoOut = ramp(f, T_MORPH + 2, T_MORPH + 18);
-    const logoOpacity = logoIn * (1 - logoOut);
-    const logoScale = lerp(0.8, 1, logoIn) * (1 - 0.12 * logoOut) * (1 + Math.sin(f * 0.15) * 0.01);
 
     // ── Barra de prompt ──
     const morph = ramp(f, T_MORPH, T_MORPH + 30, SNAP);
@@ -132,7 +131,7 @@ export const BrandToPrompt: React.FC = () => {
 
             {/* Mundo con cámara */}
             <AbsoluteFill style={{ transformOrigin: "0 0", transform: camTransform }}>
-                {/* B. Lockup Delfos Intelligence en local 60 */}
+                {/* B. Lockup BIN monocromático elegante (altura máx 76px <= 8% de pantalla) */}
                 <div
                     style={{
                         position: "absolute",
@@ -143,17 +142,19 @@ export const BrandToPrompt: React.FC = () => {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        gap: 26,
-                        opacity: logoOpacity,
-                        filter: `blur(${(1 - logoIn) * 14 + logoOut * 12}px)`,
-                        transform: `scale(${logoScale})`,
                     }}
                 >
-                    <Isotipo size={96} style={{ filter: "drop-shadow(0 0 28px rgba(129,140,248,0.7))" }} />
-                    <span style={{ fontFamily: FONT, fontSize: 92, fontWeight: 700, color: "#fff", letterSpacing: "-0.04em" }}>
-                        Delfos <span style={{ fontWeight: 300, color: "#cbd5e1" }}>Intelligence</span>
-                    </span>
+                    <BinLogoWallReveal
+                        frame={f}
+                        startFrame={T_LOGO}
+                        duration={14}
+                        exitFrame={T_MORPH + 2}
+                        height={76}
+                        color="#ffffff"
+                    />
                 </div>
+
+
 
                 {/* C. Barra macro */}
                 <div

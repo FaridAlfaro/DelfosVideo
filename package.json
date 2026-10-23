@@ -26,7 +26,8 @@
     "typescript": "5.9.3"
   },
   "scripts": {
-    "dev": "remotion studio",
+    "dev": "node scripts/patch-remotion-origin.js && remotion studio --port 3000 --no-open",
+    "postinstall": "node scripts/patch-remotion-origin.js",
     "build": "remotion bundle",
     "upgrade": "remotion upgrade",
     "lint": "eslint src && tsc"

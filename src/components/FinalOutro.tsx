@@ -1,254 +1,392 @@
 // src/components/FinalOutro.tsx (240 frames = 52–60 s, f1560–f1800 global)
-// A 0–60   (f1566 voz L27) "Connectors": dock de tiles con logos animados (uno cada 3f)
-// B 60–114 (f1620 voz L28) Flashes de keywords: 60 Real-time, 78 Warehouse, 96 AI agents
-// C 114–174 (f1677 voz L29) Mosaico: ~14 tarjetas vuelan desde los bordes, forman cúmulo 3D y colapsan
-// D 174–240 (f1734 voz L30, f1761 voz L31) Lockup: isotipo elástico en f1734 + Delfos Intelligence + Decide better en local 191
+// Rediseñado integralmente según END.mp4 manteniendo libreto y textos actuales.
+// RESTRICCIONES ESTRICTAS:
+// - BIN NUNCA usa efectos de neón ni en el logo ni en los videos.
+// - Logo BIN es SIEMPRE MONOCROMÁTICO (#ffffff).
+// - Animación del isotipo usa gradientes sobrios, NUNCA colores neón.
+// - Sin pulsos ni resplandores chillones.
+// - Animación del logo elegante: efecto saliendo detrás de una pared con desvanecido (BinLogoWallReveal).
+// - Ocupa SIEMPRE un máximo del 8% del alto de la pantalla (<= 86.4px -> 74px).
+// - El logo aparece SOLO; recién luego de su salida aparece el lema "Decide better."
 import React from "react";
-import { AbsoluteFill, Easing, Sequence, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, useCurrentFrame } from "remotion";
 import { CONNECTORS, OpenAiLogo, SnowflakeLogo } from "./Connectorlogos";
-import { C, FONT, GradientText, IN, OUT, SERIF, ZoomBlurOut, lerp, ramp } from "./Theme";
-import { Icon, Isotipo, Tile } from "./Ui";
+import { FONT, GradientText, OUT, SERIF, ZoomBlurOut, lerp, ramp } from "./Theme";
+import { Icon } from "./Ui";
+import { BinLogoWallReveal } from "./BinBrand";
 
-// ───────────── A · Connectors ─────────────
-const Dock: React.FC = () => {
-    const f = useCurrentFrame();
-    const headP = ramp(f, 0, 8, OUT);
+// ─────────────────────────────────────────────────────────────────────────────
+// 1. CONECTA TU STACK — FLUJO DE PILLS CONECTADOS (Inspirado en END.mp4)
+// ─────────────────────────────────────────────────────────────────────────────
+const StackPillFlow: React.FC<{ f: number }> = ({ f }) => {
+    const titleP = ramp(f, 0, 10, OUT);
+    const flowP = ramp(f, 10, 24, OUT);
+
+    const nodes = [
+        { label: "Real-time Streams", icon: <Icon name="bolt" size={24} color="#14d9f5" /> },
+        { label: "Data Warehouse", icon: <SnowflakeLogo size={24} /> },
+        { label: "AI Agents", icon: <OpenAiLogo size={24} /> },
+    ];
+
     return (
-        <ZoomBlurOut frames={4}>
-            <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", gap: 56 }}>
+        <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 38 }}>
+                {/* Título de sección elegante */}
                 <h2
                     style={{
                         fontFamily: FONT,
-                        fontSize: 92,
-                        fontWeight: 600,
+                        fontSize: 68,
+                        fontWeight: 700,
                         letterSpacing: "-0.03em",
-                        color: "#fff",
+                        color: "#ffffff",
                         margin: 0,
-                        opacity: headP,
-                        transform: `translateY(${(1 - headP) * -26}px)`,
-                        textShadow: `0 0 ${24 + interpolate(f, [0, 5, 12], [30, 16, 0], C)}px rgba(255,255,255,0.55)`,
+                        opacity: titleP,
+                        transform: `translateY(${(1 - titleP) * -20}px)`,
                     }}
                 >
-                    Connectors
+                    Connect your entire stack.
                 </h2>
-                <div style={{ position: "relative" }}>
-                    <div style={{ display: "flex", gap: 28 }}>
-                        {CONNECTORS.map(({ Logo, name }, i) => {
-                            const p = ramp(f, 4 + i * 3, 18 + i * 3, Easing.out(Easing.back(1.8)));
-                            return (
-                                <Tile key={name} size={150} style={{ opacity: Math.min(1, p * 1.6), filter: `blur(${(1 - Math.min(1, p)) * 8}px)`, transform: `translateY(${(1 - p) * 90 + Math.sin((f - i * 3) * 0.3) * 4}px) scale(${lerp(0.7, 1, Math.min(1, p))})` }}>
-                                    <Logo size={84} delay={8 + i * 3} />
-                                </Tile>
-                            );
-                        })}
-                    </div>
-                    {/* segunda fila fantasma */}
-                    <div style={{ position: "absolute", top: 180, left: 0, right: 0, display: "flex", gap: 28, justifyContent: "center", opacity: 0.28 * ramp(f, 16, 30), filter: "blur(5px)", transform: `translateY(${(1 - ramp(f, 16, 30, OUT)) * 60}px)` }}>
-                        {[0, 1, 2, 3, 4, 5].map((i) => (
-                            <Tile key={i} size={150} />
-                        ))}
-                    </div>
-                </div>
-            </AbsoluteFill>
-        </ZoomBlurOut>
-    );
-};
 
-// ───────────── B · Keywords ─────────────
-const Keyword: React.FC<{ left?: string; right?: string; tile: React.ReactNode }> = ({ left, right, tile }) => {
-    const f = useCurrentFrame();
-    const p = ramp(f, 0, 4);
-    const txt: React.CSSProperties = { fontFamily: FONT, fontSize: 104, fontWeight: 600, color: "#fff", letterSpacing: "-0.03em" };
-    return (
-        <ZoomBlurOut frames={4}>
-            <AbsoluteFill style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 30, opacity: p, filter: `blur(${(1 - p) * 14}px)`, transform: `scale(${lerp(0.9, 1.04, f / 18)})` }}>
-                {left && <span style={txt}>{left}</span>}
-                <Tile size={112} radius={30}>
-                    {tile}
-                </Tile>
-                {right && <span style={txt}>{right}</span>}
-            </AbsoluteFill>
-        </ZoomBlurOut>
-    );
-};
+                {/* Cadena de Pills horizontales con flechas conectoras como en END.mp4 */}
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 20,
+                        opacity: flowP,
+                        transform: `scale(${lerp(0.95, 1, flowP)})`,
+                    }}
+                >
+                    {nodes.map((node, i) => (
+                        <React.Fragment key={node.label}>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 14,
+                                    padding: "16px 28px",
+                                    borderRadius: 30,
+                                    backgroundColor: "rgba(255, 255, 255, 0.08)",
+                                    border: "1px solid rgba(255, 255, 255, 0.16)",
+                                    boxShadow: "0 14px 40px rgba(0,0,0,0.5)",
+                                    backdropFilter: "blur(16px)",
+                                }}
+                            >
+                                <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    {node.icon}
+                                </div>
+                                <span style={{ fontFamily: FONT, fontSize: 22, fontWeight: 600, color: "#ffffff" }}>
+                                    {node.label}
+                                </span>
+                            </div>
 
-// ───────────── C · Mosaico ─────────────
-const MiniCard: React.FC<{ i: number; f: number }> = ({ i, f }) => {
-    const v = i % 8;
-    const light = v === 0 || v === 4 || v === 6;
-    const base: React.CSSProperties = {
-        width: 420,
-        height: 290,
-        boxSizing: "border-box",
-        borderRadius: 24,
-        padding: 24,
-        fontFamily: FONT,
-        overflow: "hidden",
-        boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-    };
-    if (v === 1)
-        return (
-            <div style={{ ...base, background: "#0d0f18", border: "1px solid rgba(255,255,255,0.12)", color: "#fff" }}>
-                <span style={{ fontSize: 18, color: "#94a3b8" }}>Positive sentiment</span>
-                <span style={{ fontSize: 110, fontWeight: 800, letterSpacing: "-0.05em", color: "#22d3ee" }}>{Math.round(84 + Math.sin(f * 0.2 + i) * 2)}%</span>
-            </div>
-        );
-    if (v === 2)
-        return (
-            <div style={{ ...base, background: "linear-gradient(135deg,#f9a8d4,#ec4899)", color: "#12040d" }}>
-                <span style={{ fontSize: 20, fontWeight: 700 }}>Surge</span>
-                <span style={{ fontSize: 100, fontWeight: 800, letterSpacing: "-0.05em" }}>+{(42.8 + Math.sin(f * 0.2) * 1.2).toFixed(1)}%</span>
-            </div>
-        );
-    if (v === 7)
-        return (
-            <div style={{ ...base, background: "linear-gradient(135deg,#a5f3fc,#22d3ee)", color: "#04121a" }}>
-                <span style={{ fontSize: 20, fontWeight: 700 }}>Win rate</span>
-                <span style={{ fontSize: 110, fontWeight: 800, letterSpacing: "-0.05em" }}>54%</span>
-            </div>
-        );
-    if (v === 3)
-        return (
-            <div style={{ ...base, background: "#0d0f18", border: "1px solid rgba(255,255,255,0.12)", display: "grid", gridTemplateColumns: "repeat(14,1fr)", gridTemplateRows: "repeat(8,1fr)", placeItems: "center", padding: 20 }}>
-                {Array.from({ length: 112 }).map((_, n) => (
-                    <div key={n} style={{ width: 11, height: 11, borderRadius: 6, background: `rgba(${n % 2 ? "236,72,153" : "99,102,241"},${0.25 + 0.75 * Math.abs(Math.sin(f * 0.15 + n * 0.37))})` }} />
-                ))}
-            </div>
-        );
-    if (v === 5)
-        return (
-            <div style={{ ...base, background: "#0d0f18", border: "1px solid rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center" }}>
-                <svg width="190" height="190" viewBox="0 0 190 190" style={{ transform: `rotate(${f * 3}deg)` }}>
-                    <circle cx="95" cy="95" r="70" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="22" />
-                    <circle cx="95" cy="95" r="70" fill="none" stroke="#a78bfa" strokeWidth="22" strokeLinecap="round" strokeDasharray={440} strokeDashoffset={440 * 0.28} />
-                </svg>
-            </div>
-        );
-    if (v === 6)
-        return (
-            <div style={{ ...base, background: "#f8fafc", color: "#0f172a", gap: 14, justifyContent: "center" }}>
-                {[0, 1, 2, 3, 4].map((r) => (
-                    <div key={r} style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                        <div style={{ width: 56, height: 14, borderRadius: 7, background: "#cbd5e1" }} />
-                        <div style={{ width: `${30 + 50 * Math.abs(Math.sin(f * 0.1 + r))}%`, height: 14, borderRadius: 7, background: "#6366f1" }} />
-                    </div>
-                ))}
-            </div>
-        );
-    // 0 y 4: tarjetas claras con barras / línea
-    return (
-        <div style={{ ...base, background: light ? "#ffffff" : "#0d0f18", color: "#0f172a" }}>
-            <span style={{ fontSize: 20, fontWeight: 700 }}>{v === 0 ? "Revenue" : "Trend"}</span>
-            {v === 0 ? (
-                <div style={{ display: "flex", alignItems: "flex-end", gap: 10, height: 170 }}>
-                    {Array.from({ length: 9 }).map((_, k) => (
-                        <div key={k} style={{ flex: 1, height: `${30 + 65 * Math.abs(Math.sin(f * 0.1 + k))}%`, borderRadius: 6, background: k % 2 ? "#ec4899" : "#6366f1" }} />
+                            {i < nodes.length - 1 && (
+                                <svg width="28" height="24" viewBox="0 0 28 24" fill="none">
+                                    <path
+                                        d="M2 12H24M24 12L15 4M24 12L15 20"
+                                        stroke="#93c5fd"
+                                        strokeWidth="2.5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                    />
+                                </svg>
+                            )}
+                        </React.Fragment>
                     ))}
                 </div>
-            ) : (
-                <svg width="372" height="170" viewBox="0 0 372 170">
-                    <path d={Array.from({ length: 19 }).map((_, k) => `${k ? "L" : "M"}${k * 20} ${90 + 40 * Math.sin(k * 0.5 + f * 0.15)}`).join(" ")} fill="none" stroke="#6366f1" strokeWidth="5" strokeLinecap="round" />
-                </svg>
-            )}
-        </div>
-    );
-};
 
-const CARDS = 14;
-const Mosaic: React.FC = () => {
-    const f = useCurrentFrame();
-    const collapse = ramp(f, 44, 60, IN);
-    const clusterScale = lerp(1, 0.12, collapse);
-    const fade = 1 - ramp(f, 52, 60);
-    return (
-        <AbsoluteFill style={{ perspective: 1600, alignItems: "center", justifyContent: "center", opacity: fade, overflow: "hidden" }}>
-            <div style={{ position: "relative", width: 0, height: 0, transform: `scale(${clusterScale}) rotateY(${Math.sin(f * 0.08) * 16}deg) rotateX(${Math.cos(f * 0.06) * 6}deg)` }}>
-                {Array.from({ length: CARDS }).map((_, i) => {
-                    const a = i * 2.399;
-                    const r = 120 + (i % 4) * 85;
-                    const tx = Math.cos(a) * r * 1.55;
-                    const ty = Math.sin(a) * r * 0.9;
-                    const fly = ramp(f, i * 1.3, i * 1.3 + 24, Easing.out(Easing.cubic));
-                    const ox = Math.cos(a) * 2600 + (i % 2 ? 300 : -300);
-                    const oy = Math.sin(a) * 1700;
-                    const x = lerp(ox, tx, fly);
-                    const y = lerp(oy, ty, fly);
-                    const blur = Math.pow(1 - fly, 2) * 16;
-                    const sc = (0.62 + (i % 5) * 0.1) * lerp(1.3, 1, fly);
-                    const rot = ((i % 7) - 3) * 3.2 * fly;
-                    return (
-                        <div key={i} style={{ position: "absolute", left: x - 210, top: y - 145, filter: `blur(${blur}px)`, transform: `scale(${sc}) rotate(${rot}deg)`, zIndex: i }}>
-                            <MiniCard i={i} f={f} />
+                {/* Conectores en cuadrícula suave (monocromática) */}
+                <div style={{ display: "flex", gap: 24, marginTop: 12, opacity: ramp(f, 20, 34, OUT) }}>
+                    {CONNECTORS.map(({ Logo, name }, i) => (
+                        <div
+                            key={name}
+                            style={{
+                                width: 88,
+                                height: 88,
+                                borderRadius: 20,
+                                backgroundColor: "rgba(255, 255, 255, 0.04)",
+                                border: "1px solid rgba(255, 255, 255, 0.08)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                transform: `translateY(${(1 - ramp(f, 18 + i * 2, 28 + i * 2, OUT)) * 30}px)`,
+                            }}
+                        >
+                            <Logo size={46} delay={i * 2} />
                         </div>
-                    );
-                })}
+                    ))}
+                </div>
             </div>
         </AbsoluteFill>
     );
 };
 
-// ───────────── D · Lockup ─────────────
-const Lockup: React.FC = () => {
-    const f = useCurrentFrame();
-    const { fps } = useVideoConfig();
-    const sp = spring({ frame: f, fps, config: { damping: 8, stiffness: 220, mass: 0.5 } });
-    const bloomR = interpolate(f, [0, 4, 16], [50, 24, 16], C);
-    const bloomA = interpolate(f, [0, 4, 16], [0.95, 0.6, 0.35], C);
-    const burst = interpolate(f, [0, 10], [1, 0], { ...C, easing: OUT });
-    const tp = ramp(f, 0, 4);
-    // Slogan "Decide better." en local 17 (f1761 global = local 27 de outro - 10)
-    const sp2 = ramp(f - 17, 0, 10, OUT);
+// ─────────────────────────────────────────────────────────────────────────────
+// 2. KEYWORDS INDIVIDUALES CON LECTURA CONFORTABLE (Inspirado en END.mp4)
+// ─────────────────────────────────────────────────────────────────────────────
+const KeywordSlide: React.FC<{
+    title: string;
+    subtitle: string;
+    badge: string;
+    icon: React.ReactNode;
+    f: number;
+}> = ({ title, subtitle, badge, icon, f }) => {
+    const p = ramp(f, 0, 8, OUT);
+    const exit = ramp(f, 26, 34, OUT);
+    const opacity = p * (1 - exit);
+
+    return (
+        <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity }}>
+            <div
+                style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 22,
+                    transform: `scale(${lerp(0.96, 1.02, f / 34)})`,
+                }}
+            >
+                {/* Badge minimalista */}
+                <div
+                    style={{
+                        padding: "8px 20px",
+                        borderRadius: 20,
+                        backgroundColor: "rgba(255, 255, 255, 0.08)",
+                        border: "1px solid rgba(255, 255, 255, 0.14)",
+                        fontFamily: FONT,
+                        fontSize: 15,
+                        fontWeight: 600,
+                        color: "#93c5fd",
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                    }}
+                >
+                    {badge}
+                </div>
+
+                {/* Gran título legible */}
+                <h2
+                    style={{
+                        fontFamily: FONT,
+                        fontSize: 88,
+                        fontWeight: 700,
+                        letterSpacing: "-0.03em",
+                        color: "#ffffff",
+                        margin: 0,
+                        textAlign: "center",
+                    }}
+                >
+                    {title}
+                </h2>
+
+                {/* Subtítulo descriptivo con icono */}
+                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                    <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        {icon}
+                    </div>
+                    <span style={{ fontFamily: FONT, fontSize: 24, color: "#cbd5e1", fontWeight: 500 }}>
+                        {subtitle}
+                    </span>
+                </div>
+            </div>
+        </AbsoluteFill>
+    );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 3. TODO EN UN SOLO LUGAR (Convergencia unificada inspirada en END.mp4)
+// ─────────────────────────────────────────────────────────────────────────────
+const UnifiedConvergence: React.FC<{ f: number }> = ({ f }) => {
+    const p = ramp(f, 0, 8, OUT);
+    const exit = ramp(f, 22, 28, OUT);
+
+    const items = [
+        { label: "Signals", value: "2.4M" },
+        { label: "Net Positive", value: "84%" },
+        { label: "Trajectory", value: "+38%" },
+        { label: "Adoption", value: "99.4%" },
+    ];
+
+    return (
+        <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity: p * (1 - exit) }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 32 }}>
+                <h2
+                    style={{
+                        fontFamily: FONT,
+                        fontSize: 80,
+                        fontWeight: 700,
+                        letterSpacing: "-0.03em",
+                        color: "#ffffff",
+                        margin: 0,
+                    }}
+                >
+                    Everything. In ONE place.
+                </h2>
+
+                {/* Cuadrícula de 4 cards minimalistas de datos convergentes */}
+                <div style={{ display: "flex", gap: 20 }}>
+                    {items.map((it, i) => {
+                        const cardP = ramp(f, 4 + i * 3, 16 + i * 3, OUT);
+                        return (
+                            <div
+                                key={it.label}
+                                style={{
+                                    width: 220,
+                                    padding: "24px 20px",
+                                    borderRadius: 20,
+                                    backgroundColor: "rgba(255, 255, 255, 0.05)",
+                                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: "center",
+                                    gap: 6,
+                                    opacity: cardP,
+                                    transform: `translateY(${(1 - cardP) * 24}px)`,
+                                }}
+                            >
+                                <span style={{ fontFamily: FONT, fontSize: 14, color: "#8b949e", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                                    {it.label}
+                                </span>
+                                <span style={{ fontFamily: FONT, fontSize: 44, fontWeight: 700, color: "#ffffff" }}>
+                                    {it.value}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </AbsoluteFill>
+    );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 4A. FINALE: LOGO BIN COMPLETAMENTE SOLO (Efecto salida detrás de pared)
+// ─────────────────────────────────────────────────────────────────────────────
+const SoloBinLogoFinale: React.FC<{ f: number }> = ({ f }) => {
     return (
         <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
-            <div style={{ position: "absolute", width: 1000, height: 1000, background: "radial-gradient(circle, rgba(255,255,255,0.35) 0%, transparent 60%)", opacity: burst, transform: `scale(${1 + (1 - burst) * 0.6})` }} />
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", transform: `translateY(-40px)` }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-                    <div style={{ display: "flex", transform: `scale(${lerp(0.1, 1, sp) * (1 + Math.sin(f * 0.18) * 0.015)}) rotate(${lerp(-60, 0, sp)}deg)`, filter: `drop-shadow(0 0 ${bloomR}px rgba(255,255,255,${bloomA}))` }}>
-                        <Isotipo size={128} />
-                    </div>
-                    <h1 style={{ fontFamily: FONT, fontSize: 118, fontWeight: 700, color: "#fff", margin: 0, letterSpacing: "-0.04em", opacity: tp, transform: `translateX(${(1 - tp) * -35}px)` }}>
-                        Delfos <span style={{ fontWeight: 300, color: "#cbd5e1" }}>Intelligence</span>
-                    </h1>
-                </div>
-                <div style={{ marginTop: 22, opacity: sp2, transform: `translateY(${(1 - sp2) * 18}px) scale(${lerp(1, 1.03, ramp(f, 17, 66))})` }}>
-                    <GradientText colors={["#fb7185", "#a78bfa", "#60a5fa"]} style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 54 }}>
-                        Decide better.
-                    </GradientText>
-                </div>
+            {/* Animación del Logo BIN saliendo de la pared:
+                - Estrictamente monocromático (#ffffff)
+                - Altura máx 76px (<= 8% de 1080)
+                - Cero neón, cero pulsos */}
+            <BinLogoWallReveal
+                frame={f}
+                startFrame={0}
+                duration={16}
+                exitFrame={26}
+                height={76}
+                color="#ffffff"
+            />
+        </AbsoluteFill>
+    );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 4B. LEMA "Decide better." — APARECE RECIÉN LUEGO DE LA SALIDA DEL LOGO
+// ─────────────────────────────────────────────────────────────────────────────
+const DecideBetterFinale: React.FC<{ f: number }> = ({ f }) => {
+    // Entrada elegante de texto desvaneciéndose en escala de grises / plata / azul profundo
+    const p = ramp(f, 0, 10, OUT);
+    const scale = lerp(0.96, 1.02, ramp(f, 0, 36, OUT));
+
+    return (
+        <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
+            <div
+                style={{
+                    opacity: p,
+                    transform: `scale(${scale})`,
+                    textAlign: "center",
+                }}
+            >
+                <GradientText
+                    colors={["#ffffff", "#cbd5e1", "#93c5fd", "#e2e8f0", "#ffffff"]}
+                    speed={1.5}
+                    style={{
+                        fontFamily: SERIF,
+                        fontStyle: "italic",
+                        fontSize: 92,
+                        fontWeight: 700,
+                        letterSpacing: "-0.02em",
+                        textShadow: "0 10px 40px rgba(0,0,0,0.8)",
+                    }}
+                >
+                    Decide better.
+                </GradientText>
             </div>
         </AbsoluteFill>
     );
 };
 
-export const FinalOutro: React.FC = () => (
-    <AbsoluteFill>
-        {/* A: Connectors en local 0–60 (f1560–f1620) */}
-        <Sequence durationInFrames={60}>
-            <Dock />
-        </Sequence>
+// ─────────────────────────────────────────────────────────────────────────────
+// COMPOSICIÓN OUTRO COMPLETA (240 FRAMES)
+// ─────────────────────────────────────────────────────────────────────────────
+export const FinalOutro: React.FC = () => {
+    const f = useCurrentFrame();
 
-        {/* B: Flashes keywords en local 60, 78, 96 (f1620, f1638, f1656) */}
-        <Sequence from={60} durationInFrames={18}>
-            <Keyword left="Real-time" tile={<Icon name="bolt" size={60} color="#a5b4fc" />} right="Streams" />
-        </Sequence>
-        <Sequence from={78} durationInFrames={18}>
-            <Keyword tile={<SnowflakeLogo size={70} />} right="Data warehouse" />
-        </Sequence>
-        <Sequence from={96} durationInFrames={18}>
-            <Keyword tile={<OpenAiLogo size={70} />} right="AI agents" />
-        </Sequence>
+    return (
+        <AbsoluteFill>
+            {/* 1. Connect your entire stack (local 0–46) */}
+            {f < 46 && (
+                <ZoomBlurOut frames={4}>
+                    <StackPillFlow f={f} />
+                </ZoomBlurOut>
+            )}
 
-        {/* C: Mosaico en local 114–174 (f1674–f1734) */}
-        <Sequence from={114} durationInFrames={60}>
-            <Mosaic />
-        </Sequence>
+            {/* 2. Keywords individuales con lectura cómoda (local 46–142) */}
+            {f >= 46 && f < 78 && (
+                <ZoomBlurOut frames={3}>
+                    <KeywordSlide
+                        title="Real-time Streams"
+                        subtitle="Continuous data synchronization across all channels"
+                        badge="Pipeline"
+                        icon={<Icon name="bolt" size={24} color="#14d9f5" />}
+                        f={f - 46}
+                    />
+                </ZoomBlurOut>
+            )}
+            {f >= 78 && f < 110 && (
+                <ZoomBlurOut frames={3}>
+                    <KeywordSlide
+                        title="Data Warehouse"
+                        subtitle="Unified petabyte-scale storage & instant ingestion"
+                        badge="Infrastructure"
+                        icon={<SnowflakeLogo size={24} />}
+                        f={f - 78}
+                    />
+                </ZoomBlurOut>
+            )}
+            {f >= 110 && f < 142 && (
+                <ZoomBlurOut frames={3}>
+                    <KeywordSlide
+                        title="AI Agents"
+                        subtitle="Autonomous synthesis, reasoning, and strategic alerts"
+                        badge="Intelligence"
+                        icon={<OpenAiLogo size={24} />}
+                        f={f - 110}
+                    />
+                </ZoomBlurOut>
+            )}
 
-        {/* D: Impacto lockup en local 174 (f1734) y slogan en local 191 (f1761) */}
-        <Sequence from={174} durationInFrames={66}>
-            <Lockup />
-        </Sequence>
-    </AbsoluteFill>
-);
+            {/* 3. Everything. In ONE place. (local 142–172) */}
+            {f >= 142 && f < 172 && (
+                <ZoomBlurOut frames={4}>
+                    <UnifiedConvergence f={f - 142} />
+                </ZoomBlurOut>
+            )}
+
+            {/* 4A. Logo BIN aparece COMPLETAMENTE SOLO (local 172–206, 34 frames)
+                - Saliendo de detrás de la pared
+                - Monocromático (#ffffff)
+                - Máximo 8% del alto de la pantalla (76px)
+                - Cero neón, cero pulsos */}
+            {f >= 172 && f < 206 && (
+                <SoloBinLogoFinale f={f - 172} />
+            )}
+
+            {/* 4B. Recién LUEGO de la salida del logo aparece el lema "Decide better." (local 206–240, 34 frames) */}
+            {f >= 206 && (
+                <DecideBetterFinale f={f - 206} />
+            )}
+        </AbsoluteFill>
+    );
+};
